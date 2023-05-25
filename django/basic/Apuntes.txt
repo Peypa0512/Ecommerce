@@ -1,0 +1,456 @@
+Django utiliza la arquitectura MVT(Modelo vista Template)
+
+
+
+Vamos a activar el env desde git
+
+para ello nos vamos a la carpeta boton dcho git bash y ponemos el comando...
+
+source/env/Scripts/activate
+
+Ejecutamos el servidor :
+
+python manage.py runserver
+--------------------------
+
+
+
+HTTPRESPONSE
+------------
+
+Lo primero que tenemos que hacer es configurar el archivo urls.py
+
+creamos el path...
+from . import views ---> importamos la clase al estar al mismo nivel ponemos el '.'
+ # cuando veamos el home de la página web
+    path('', views.home),
+                  \____/
+               nombre función
+seguramente tendremos que crear el archivo views.py, una vez creado hacemos lo siguiente....
+
+
+El resultado usual de ejecutar una función def es un objeto Response, que es la respuesta de
+la app web al cliente(html, xml,json)...
+Para ello se utiliza HttpResponse.
+
+En views.py....
+
+from django.http import HttResponse
+
+def home(request): ---> podemos agregar todos los parametros que quisieras que se procesara
+    return HttpResponse('<h2>Bienvenido a mi página Web</h2>')
+
+Esto lo que va a hacer es que va a devolver una página con este texto
+
+BOOTSTRAP Y DJANGO
+-------------------
+
+Bootstrap es un framework de CSS
+
+https://getbootstrap.com
+
+En examples podemos encontrar muchos componentes que puedes incorporar, el primero que vamos a hacer es coger jumbotron
+
+Muestra información, titulo descripción y un boton de detalle.
+
+Vamos a template/home.html
+
+el codigo que hemos copia de la página, lo pegamos dentro de body.
+
+tenemos que importar la libreria bootstrap, para ello vamos a ...
+
+https://bootstrapcdn.com
+
+En el primer CSS abrimos la pestaña y copiamos la línea de comando de html
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+Una vez hecho nos vamos al home.html y lo pegamos aquí
+
+<title>Lista Usuarios</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+
+Una vez hecho podemos customizarlo a como queramos.
+
+ARCHIVOS ESTATICOS EN DJANGO
+-----------------------------
+
+cuando importamos la línea
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+                             \_____________________________________________________________________/
+                                si lo ejecutamos tenemos el código necesario para poder hacerlo  con un archivo
+
+Lo que vamos a hacer es copiar el código que aparece en este dirección web ctrl+alt para seleccionar todo
+
+Ahora nos vamos a static creamos un folder y un archivo con el nombre bootstrap.min.css y lo pegamos dentro.
+
+una vez hecho vamos a abrir el fichero settings.py
+
+    STATIC_URL = "static/" --> por defecto apunto a statico
+    #añadimos la ruta del CSS
+    STATIC_ROOT = BASE_DIR / 'static' --> Base_DIR hace referencia a la línea 16 '*' y apunta a la carpeta 'static'
+    STATICFILES_DIRS = [
+    'proyectodjango/static', --> nombre del proyecto / carpeta static
+    ]
+
+    *
+    BASE_DIR = Path(__file__).resolve().parent.parent --> representa la raiz de mi proyecto que es base
+
+Una vez hecho esto nos vamos a home.html
+
+
+para poder leer código del servidor django en la parte de arriba del fichero ponemos....
+
+    {% load static %} --> necesitamos cargar estas variables del tipo server que representa la ruta statica
+                          de los archivos bootstrap
+
+ Ahora hacemos que lea la ruta estatica.....
+
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%}">
+                                  \_____/ \_____________________/
+                                  folder     ruta fichero
+
+  CREACIÓN DE APPS EN DJANGO
+  --------------------------
+
+creamos una nueva carpeta ...
+
+python manage.py startapp usuarios
+
+
+
+
+Para registrar y sea visible en el portal de django
+
+    admin.site.register(Usuario)
+
+Vamos a registrar esta app como parte del proyecto, para ello vamos a proyectodjango/settings.py
+
+Vamos a añadirlo aqui....
+
+    INSTALLED_APPS = [
+    "usuarios.apps.UsuariosConfig", --->
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+]
+
+esto es si nos vamos al archivo app.py tiene un metodo llamado Usuariosconfig que va a ser el encargado de iniciar la
+ejecución de la app dentro del proyecto, por este motivo dentro de installed_apps tengo que hacer la llamada a este
+ejecutable. Si voy a hacer más tendré que ponerlo también aquí.
+
+Vamos a recordar algo interesante, el usuario se comunica con el archivo Urls.py, si vamos al archivo que hemos
+configurado aparecerá la línea...
+
+    path('', views.home), ---> esto era cuando entraba dentro de la página home
+
+si queremos que en nuestro proyecto se diera directamente a mi app usuarios tendría que crear también el fichero urls.py
+
+El botón de la página home que pone "Lista de Usuarios" lo que yo quiero es que cuando se clickee se rediriga la página
+a usuarios. el path tiene dos partes...
+
+    htpps://localhost:8000/usuario/lista
+                          \_______/\____/
+                             app     registramos lista en urls.py
+                          usuarios
+
+
+Lo primero que iremos es ir al archivo URLs.py pero del proyecto global y lo registramos la app usuarios
+
+     path('usuario/', include('usuarios.urls')
+
+Esto es para que se redireccione a la app usuarios/urls.py
+
+Una vez hecho vamos al archivo de usuarios urls.py ....
+
+     # para la app de Usuarios crearemos también este fichero
+    from django.urls import path
+    from . import views
+
+    urlpatterns = [
+    path('lista/', views.usuariolist, name="usuario_list") --->
+]
+
+Vamos ahora al archivo views.py y creamos la funcion def usuario.list....
+
+    def usuariolist(request):
+        return render(request, 'usuariolist.html')
+
+con esto nos devuelve el template usuariolist.html...
+Para ello tenemos que crearlo, nos vamos a templates del proyecto y creamos el archivo usuariolist.html...
+
+    ahora creamos la página con un body que contiene...
+        <h1>lista de usuarios</h1>
+
+Vamos programar el boton para que me redireccione directamente a la dirección que yo quiero....
+
+en home.html....
+
+     <a class="btn btn-primary btn-lg" href="{% url 'usuario_list'%}">Lista de Usuarios</a>
+     \_/
+cambiamos el boton por un href
+
+
+APP Y BOOTSTRAP TABLE
+---------------------
+
+     htpps://localhost:8000/usuario/lista ---> vamos a hacer esta parte...
+                          \_______/\____/
+                             app     registramos lista en urls.py
+                          usuarios
+
+
+nos vamos a https://getbootstrap.com ---> Docs ---> en el buscador ponemos table.
+
+ Cogemos el modelo que más nos guste y le damos al boton de copy...
+
+Una vez hecho nos vamos a template/usuarioslist.html.....
+
+Dentro del body lo aconsejable es trabajar con un container div...
+
+     <div class="container">
+
+dentro del container vamos a poner algún titulo....
+
+     <h2 class="text-center mt-5"> Lista de Usuarios</h2>  --> texto centrado, fuente 5
+
+ Ahora mismo no está leyendo los estilos de bootstrap, para ello....
+
+    {%load static%}
+
+    y después de title antes de </head>
+
+     <link rel="stylesheet" href="{%static 'css/bootstrap.min.css'%}">
+
+ Con esto ya lo tendriamos....
+
+    Pegamos la tabla y vemos que ....
+
+        La cabecerá o titulo de la tabla están aquí...
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Usuario</th>
+                <th scope="col">Profesión</th>
+                <th scope="col">Género</th>
+                <th scope="col">Ciudad</th>
+            </tr>
+            </thead>
+
+    Esto es estático ya que es la cabecerá y no van a cambiar.
+
+    La parte dinamica viene aquí....
+
+            <tbody>
+                <tr>
+                    <th scope="row">1</th>
+                    <td>Pedro</td>
+                    <td>Developed</td>
+                    <td>Maculino</td>
+                    <td>Madrid</td>
+                </tr>
+            </tbody>
+        </table>
+
+ Estos datos lo suyo sería que viene desde una base de datos, pero de momento para ver que funcione lo dejamos así...
+
+ CREACIÓN DE MODELOS EN DJANGO
+ -----------------------------
+
+ Nos vamos a usuarios/models.py
+
+ Aqui vamos a crear una clase que represente los atributos y propiedades que va a tener un usuario dentro
+ de la app, posteriormente estos atributos van a convertirse en columnas de una table de la BBDD.
+
+    from django.db import models
+
+# vamos a crear las propiedades de los atributos.
+class Usuario(models.Model):
+    genero_eleccion = ( --> para hacer elección del genero
+        ('M','Masculino'),
+        ('F', 'Femenino'),
+    )
+
+    codigo = models.IntegerField()
+    # ponemos que queremos la foto con el año, mes y día
+    photo = models.ImageField(upload_to='photos/%Y/%m/%d/') -->ubicacion imagenes
+                                               \________/
+                                               año/mes/dia que se tomo la foto
+    nombre = models.CharField(max_length=100)
+    profesion = models.CharField(max_length=100)
+    #para el genero elegirá el que corresponda
+    genero = models.CharField(choices=genero_eleccion, max_length=100)
+                              \______/
+                              selección
+    ciudad = models.CharField(max_length=100)
+
+    # por el tema de las fotos saldrá un error de pillow hay que instalarlo pip install pillow
+                                                                            \_________________/
+    # si yo quisiera que se mostrarán al detalle todos los usuarios
+
+    def __str__(self):
+        return self.nombre
+
+
+ADMINISTRADOR Y SUPERUSER EN DJANGO
+------------------------------------
+
+Django no solo permite hacer app, sino también se puede acceder a su modo administrador donde manipulamos las entidades
+de tu proyecto.
+
+nos vamos a localhost8000/admin
+
+Lo primero que tenemos que hacer es hacer la migración para ello hacemos lo siguiente...
+
+    python manage.py makemigrations
+
+Esto genera un fichero llamado 00001_initial.py
+
+Lo que vemos es igual que el fichero que hemos creado en models.py
+
+Para poder ejecutar este código, vamos al terminal y ponemos....
+    python manage.py migrate
+
+Automaticamente va a generar...
+
+    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+ Lo que va a generar un Id cada vez que se cree un usuario.
+
+ Vamos a ver como hacer el super usuario....
+
+  abrimos git bash en la carpeta basic, y activamos el env
+
+  Una vez dentro de env...
+
+    winpty python manage.py createsuperuser
+    Username (leave blank to use 'usuario'):
+    Email address:
+    Password:
+    Password (again):
+    Superuser created successfully.
+
+Una vez creado levantamos el servidor y lo probamos....
+
+Una vez dentro vemos el interfaz gráfico....
+
+
+AGREGAR ENTIDAD Y TABLA  EN DJANGO ADMIN
+------------------------------------------
+
+Podemos agregar usuarios desde el interfaz gráfico de Admin para ello nos vamos a la izquierda abajo pone Usuarios
+Al abrir podemos agregarlo en ADD USUARIO.
+
+Si no sale la foto tendremos que ir a  proyectoDjango y a settings.py...
+
+Nos tenemos que ir a la parte de abajo donde están registradas las URLS y debajo a lo que tenemos...
+
+    # para que reconozca el mediafile configuration
+    MEDIA_ROOT = BASE_DIR / 'media'
+    MEDIA_URL = '/media/' --> tenemos que crear la carpeta...
+
+Una vez hecho esto nos vamos al fichero urls.py...
+y vamos a añadir esto....
+    from django.conf.urls.static import static --> tenemos que importar
+    from django.conf import settings --> tenemos que importar
+
+    urlpatterns = [
+    path("admin/", admin.site.urls),
+    # cuando veamos el home de la página web
+    path('', views.home),
+    # vamos a registrar el path de usuario
+    path('usuario/', include('usuarios.urls'))
+
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+               \_________________/ \________________________________/
+                lo que acabamos       teniendo como referencia document_root
+                de hacer
+
+
+Para que el archivo bootstrap.min.css se ejecute como un mediafile tenemos que ir a git bush
+
+    python manage.py collectstatic
+
+Esto nos va a crear en basic una carpeta dentro de static llamada admin toda la interfaz grafica de administración de django
+y una carpeta css que es donde está bootstrap.main.css
+
+Cuando creamos un nuevo usuario nos aparece como un objeto, si yo quiero que aparezca con detalle cada usuario hacemos
+lo siguiente....
+nos vamos a models.py....
+
+Vamos a crear un metodo __str__
+
+     def __str__(self):
+        return self.nombre
+
+ cuando hacemos return self.nombre me dará el nombre de cada usuario
+
+ CONSULTA DE DATOS EN DJANGO DESDE DATABASE
+ ------------------------------------------
+
+Vamos a la app usuarios y a views.py
+
+    from django.shortcuts import render
+    from .models import Usuario --> importamos la clase Usuario
+
+    # Create your views here.
+    def usuariolist(request):
+        get_usuarios = Usuario.objects.all() --> defino una variable para que recoga todos los objetos
+        data = { --> hago un diccionario en el que van a aparecer todos los usuarios
+            'get_usuarios': get_usuarios
+        }
+    return render(request, 'usuariolist.html', data) --> me tiene que devolver este diccionario.
+
+
+Nos vamos a template y a usuariolist.html
+
+Para hacer una prueba vamos a poner entre ...
+
+<body>
+    {%for usr in get_usuarios%}
+        {{usr.nombre}}
+    {%endfor%}
+    <div class="container">
+
+Ahora que vemos que funciona vamos a hacerlo en la tabla quedando así...
+
+    <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Foto</th>
+                <th scope="col">Usuario</th>
+                <th scope="col">Profesión</th>
+                <th scope="col">Género</th>
+                <th scope="col">Ciudad</th>
+            {%for usr in get_usuarios%}
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{usr.codigo}}</td>
+                <td><img src="{{usr.photo.url}}" width="40" height="40" style="border-radius:50px;"></td>
+                <td>{{usr.nombre}}</td>
+                <td>{{usr.profesion}}</td>
+                <td>{{usr.genero}}</td>
+                <td>{{usr.ciudad}}</td>
+            </tr>
+            {%endfor%}
+
+Lo guardamos y comprobamos como queda.
+
+
+
+            </tbody>

@@ -1,0 +1,48 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Usuarios</title>
+    <link rel="stylesheet" href="{%static 'css/bootstrap.min.css'%}">
+</head>
+<body>
+    <!-- {%for usr in get_usuarios%}
+        {{usr.nombre}}
+    {%endfor%} -->
+    <div class="container">
+        <h2 class="text-center mt-5"> Lista de Usuarios</h2>        
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Foto</th>
+                <th scope="col">Usuario</th>
+                <th scope="col">Profesión</th>
+                <th scope="col">Género</th>
+                <th scope="col">Ciudad</th>
+            {%for usr in get_usuarios%}
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{usr.codigo}}</td>
+                <td><img src="{{usr.photo.url}}" width="40" height="40" style="border-radius:50px;"></td>
+                <td>{{usr.nombre}}</td>
+                <td>{{usr.profesion}}</td>
+                <td>{{usr.genero}}</td>
+                <td>{{usr.ciudad}}</td>
+            </tr>
+            {%endfor%}
+           
+            </tbody>
+        </table>
+  
+  
+
+    </div>
+</body>
+</html>

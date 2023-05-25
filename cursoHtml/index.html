@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso Intensivo CSS</title>
+    <!-- para linkear el fichero css-->
+    <link rel ="stylesheet" href="css/estilos.css"> 
+    <!--segundo metodo-->
+    <style>
+        h1, h2{
+            background-color: red;
+            color: white
+        }
+        .item{
+            color: red;
+        }
+        ul li{
+            color: blue;
+        }
+        #list-item{
+            color:blueviolet;
+        }
+        input[type="email"]{
+            background-color: orange;
+            color: white;
+        }
+        .dropdown-content a{
+            display: none;  
+        }
+        /* cuando pase el mouse se vuelve activa*/
+        .dropdown:hover .dropdown-content a{
+            display:block;
+        }
+        /*para los seudoelementos...-->*/
+        h3::first-letter{
+            font-size: 70;
+            font-style: italic;
+            color:goldenrod;
+        }
+        h3::before{
+            content:"Este es el ";
+            color: green;
+        }
+        h3::after{
+            content:" del sitio Web";
+            font-size: 50px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <!--primer metodo-->
+    <h1>Este es el encabezado</h1>
+    <h2>Este es el encabezado</h2>
+    <!-- tercer metodo-->
+    <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. 
+        Libero nulla nostrum tempore exercitationem quae eum?</p>
+
+    <ul>
+        <!--atributo de clase tiene mayor prioridad que seleccionar elementos de ul li-->
+        <li class="item">HTML5</li>
+        <li>CSS3</li>
+        <!--el atributo id necesitamos usar #-->
+        <li id="list-item" class="item">JAVA</li>
+    </ul>
+    <input type="text" placeholder="Hola">
+    <input type="email" placeholder="Tu correo">
+    <!-- vamos a  declara un menú desplegable (dropdown)-->
+    <div class="dropdown">
+        <!-- desplegamos un enlace-->
+        <a href="#">Items</a>
+        <div class="dropdown-content">
+            <!-- vamos a deplegar los elementos de contenidos-->
+            <a href="#">Elemento1</a>
+            <a href="#">Elemento2</a>
+            <a href="#">Elemento3</a>
+        </div>
+    </div>
+    <!--seudoelementos-->
+    <h3>Encabezado seudoelementos</h3>
+
+</body>
+</html>

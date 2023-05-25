@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento Basico de HTML</title>
+</head>
+<body>
+<!-- un atajo para sacar un comentario es ctrl+llave de cierre "ç" -->
+<!-- encabezados.... -->
+<h1>Encabezados 1</h1>
+<h2>Encabezados 2</h2>
+<h3>Encabezados 3</h3>
+<h4>Encabezados 4</h4>
+<h5>Encabezados 5</h5>
+<h6>Encabezados 6</h6>
+
+<!-- Parrafos -->
+<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde sapiente, error commodi numquam 
+    dolores ex in optio excepturi explicabo quaerat at voluptates minima nisi asperiores a quo dolore 
+    repellendus tenetur accusantium ab accusamus fuga sunt? 
+    Adipisci nemo necessitatibus molestiae laudantium.</p>
+<!-- los elementos de nivel de linea solo se coloca en una sola línea como span -->
+    <span>Hola</span>
+    <span>Mundo</span>
+<!-- como crear listas... -->
+
+<!-- listas desordenadas -->
+<ul>
+    <li>HTML</li> <!-- se representa lo minimo con li -->
+    <li>CSS</li> 
+    <li>React</li>
+    <li>Javascript</li>
+</ul>
+
+<!-- listas ordenadas -->
+<ol>
+    <li>HTML</li> <!-- se representa lo minimo con li -->
+    <li>CSS</li> 
+    <li>React</li>
+    <li>Javascript</li>
+</ol>
+
+<!-- listas anidadas -->
+<ul>
+    <li>HTML</li> <!-- se representa lo minimo con li -->
+    <li>librerias y frameworks</li> 
+    <ul>
+        <li>React</li> <!-- se representa lo minimo con li -->
+        <li>Angular</li> 
+        <li>Vue</li>
+        
+    </ul>
+    
+    <li>Javascript</li>
+</ul>
+
+<!-- Enlaces (links) -->
+<!-- <a href="#">Click</a>  Se usa para conectar distintas partes de la página web-->
+<!-- tal como está entrará a la página Fifa pero perderemos la página nuestra para evitarlo utilizamos target -->
+<a href="https://fifa.com" target="_blanck">Click</a>
+
+<!-- Imagenes -->
+<!-- Tiene 2 atributos src= atributo de origen con la ruta y alt= si no se muestra la imagen puede ver el texto -->
+<!-- <img src="imagenes/404.png" alt="Error 404" width="150"> -->
+<!-- podemos usar la imagen como enlace -->
+<a href ="https://python.org"><img src="imagenes/Python-PNG-HD-Image.png" alt="Python.org" width="150"></a>
+
+
+<!-- Formularios -->
+<!-- action se usa para enviar la información -->
+<br>
+<br>
+<br>
+<!-- ponemos una linea horizontal -->
+<hr>
+<br>
+<form>
+    <!-- div es un elemento de bloque, nos permite crear dividiones en html, se usa para envolver grupos de elementos-->
+    <div>
+    <!-- label for="" especifica a que elemento del formulario esta vinculado esta etiqueta -->
+        <label>Primer Nombre:</label>    
+        <input type="text">
+    </div>
+    <br>
+    <div>
+        <label>Apellidos</label>
+        <input type="text">
+    </div>
+    <br>
+    <div>
+        <!-- el type="email" en html5 agrega una validación para correos electronicos, funciona cuando se envia el formulario -->
+        <label>Email</label>
+        <input type="email">
+    </div>
+    <br>
+    <div>
+        
+        <label>Contraseña</label>
+        <input type="password">
+    </div>
+    <br>
+    <div>
+        <!-- textArea -->
+        <label>Mensaje</label>
+        <textarea placeholder="Ingresa texto"></textarea>
+    </div>
+    <br>
+    <div>
+        <!-- Checkbox -->
+        <!-- al utilizar el for con check y en id cuando checkeamos la casilla saldrá el chequeo en azul -->
+        <label for="check">Checkbox</label>
+        <input type="checkbox" id="check">
+    </div>
+    <br>
+    <div>
+        <!-- radioButton -->
+        <label for="check">RadioButton</label>
+        <input type="radio" id="check" name="check">
+        <input type="radio" id="check" name="check">
+    </div>
+    <br>
+    <input type="submit" value="ENVIAR">
+
+</form>
+
+
+
+
+
+<p style="margin-top: 500px"></p>
+</body>
+</html>

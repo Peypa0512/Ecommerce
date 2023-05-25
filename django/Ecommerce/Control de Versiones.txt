@@ -1,0 +1,47 @@
+Cuando creamos un repositorio hacemos lo siguiente....
+
+Arriba va a poner el nombre del repositorio...
+
+    en mi caso --> https://github.com/Peypa0512/Ecommerce.git
+
+
+Cuando se crea el repositorio y está vacio....
+
+or create a new repository on the command line
+
+echo "# Ecommerce" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/Peypa0512/Ecommerce.git
+git push -u origin main
+
+enviar un repositorio existente desde la línea de comando
+
+git remote add origin https://github.com/Peypa0512/Ecommerce.git
+git branch -M main
+git push -u origin main
+
+o importar código de otro repositorio
+
+hacemos el git init dentro de la carpeta Ecommerce...
+
+ahora creamos el archivo .gitignore
+
+para generar la estructura podemos ir a la página gitignore.io
+
+Añade ciertas carpetas y aparte añadimos los txt de apuntes (solo me interesan a mí)
+
+Hacemos git add .
+
+Añadimos todos los archivos menos el .gitignore
+
+Podemos configurar con el usuario y el correo...
+
+git config --global user.name "Peypa0512"
+git config --global user.email  pedro.sanzr@outlook.es
+
+Esto se hace solo 1 vez, una vez configurado no hace falta hacerlo más...
+
+Video 4:57

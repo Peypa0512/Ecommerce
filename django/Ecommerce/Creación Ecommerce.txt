@@ -1,0 +1,1190 @@
+Proyecto Ecommerce
+------------------
+
+Creamos la carpeta y dentro de ella ejecutamos el git bush
+
+Lo primero que tenemos que hacer es crear el entorno virtual....
+
+
+	python -m venv env
+
+y ahorar vamos a activarlo....
+
+	$ source env/Scripts/activate
+	(env)
+	Usuario@LAPTOP-5O18608A MINGW64 ~/Desktop/curso Django/django/Ecommerce
+
+
+Con esto ya estaríamos dentro del entorno virtual .
+
+Lo siguiente será instalar django
+
+	pip install django
+
+
+	$ pip install django
+Collecting django
+  Downloading Django-4.2-py3-none-any.whl (8.0 MB)
+     ---------------------------------------- 8.0/8.0 MB 28.4 MB/s eta 0:00:00
+Collecting sqlparse>=0.3.1
+  Using cached sqlparse-0.4.3-py3-none-any.whl (42 kB)
+Collecting asgiref<4,>=3.6.0
+  Using cached asgiref-3.6.0-py3-none-any.whl (23 kB)
+Collecting tzdata
+  Downloading tzdata-2023.3-py2.py3-none-any.whl (341 kB)
+     ---------------------------------------- 341.8/341.8 kB ? eta 0:00:00
+Installing collected packages: tzdata, sqlparse, asgiref, django
+Successfully installed asgiref-3.6.0 django-4.2 sqlparse-0.4.3 tzdata-2023.3
+
+
+
+para verificar que se ha instalado correctamente 
+
+	pip freeze
+
+Vamos a crear nuestro proyecto...
+
+	django-admin startproject ecommerce .--> para que se genere a proyecto raiz
+
+
+Para comprobar que esta todo correcto hacemos lo siguiente...
+
+	
+	python manage.py runserver
+
+Con esto levantamos el servidor y vemos que esta todo correcto.
+
+CREACION DEL TEMPLATE EN DJANGO
+-------------------------------
+
+Lo primero que tenemos que hacer es hacer una ruta en urls.py para indicar donde va a estar la vista home
+
+	from django.contrib import admin
+	from django.urls import path
+	from . import views
+
+	urlpatterns = [
+    		path("admin/", admin.site.urls),
+    		path('', views.home, name="home"),
+	]
+
+El siguiente paso es crear el archivo views.py, ya que todavía no exite...
+
+	from django.shortcuts import  render(es el que permite desplegar el codigo html dentro de django)
+
+	# va leer la data desde un template htlm
+	def home(request):
+    		return render(request, 'home.html')
+
+Ahora tendremos que crear una carpeta llamada template donde estara home.html
+
+Una vez creado vamos a abrir settings.py donde tendremos que registrar el templates...
+
+nos vamos a la línea 57 en "DIRS": [],
+
+ 	"DIRS": ['templates'],
+
+
+Guardamos cambios...
+
+
+Creación de página inicial de Ecommerce
+----------------------------------------
+
+Para no estar creando todo desde 0 nos hemos descargado un archivo con todo el codigo html y las carpetas estaticas(imagenes,css,js....)
+
+Lo que tenemos que hacer es crear un folder 'static', en el mismo nivel que los archivo .py del proyecto ecommerce, y lo pegamos....
+
+Ahora tenemos que registrarlo en settings.py....
+
+Nos vamos a la línea 188(en mi caso) donde pone....
+	
+	STATIC_URL = "static/"
+
+
+
+	STATIC_URL = "static/"
+	STATIC_ROOT = BASE_DIR /'static' --> le voy a indicar BASE_DIR(raiz) donde tiene que buscar que va a ser static
+	STATICFILES_DIRS = [
+    		'ecommerce/static' --> aqui le indicamos la ruta donde está los ficheros multimedias(imagenes, js....)
+	]
+
+
+
+Algo adicional que hay que hacer es ejecutar dentro del git bush que me permita generar estos archivos estaticos a la raiz de la carpeta.
+
+
+	(env)
+	Usuario@LAPTOP-5O18608A MINGW64 ~/Desktop/curso Django/django/Ecommerce
+	$ python manage.py collectstatic ---> hay que ejecutar esto para que lo pueda coger.
+
+	218 static files copied to 'C:\Users\Usuario\Desktop\curso Django\django\Ecommerce\static'.
+	
+Si vemos ahora el proyecto vemos que en la raiz hay creada una carpeta static con todos los directorios, incluido uno de admin
+Se puede diferenciar por esta carpeta, que es la carpeta de administración de recursos de django.
+
+Ahora nos vamos a home.html para que pueda coger todos estos ficheros....
+
+En la línea 1 ponemos...
+
+	{%load static%} ---> esto quiere decir que tiene que ir a la carpeta static y buscar los diferentes archivos para poder cargarlos...
+
+
+	<link href="{% static 'images/favicon.ico'%}" rel="shortcut icon" type="image/x-icon">
+
+	<!-- jQuery -->
+	<script src="{% static 'js/jquery-2.0.0.min.js'%}" type="text/javascript"></script>
+
+	<!-- Bootstrap files-->
+	<script src="{% static 'js/bootstrap.bundle.min.js'%}" type="text/javascript"></script>
+	<link href="{% static 'css/bootstrap.css'%}" rel="stylesheet" type="text/css"/>
+
+	<!-- Font awesome 5 -->
+	<link href="{% static 'fonts/fontawesome/css/all.min.css'%}" type="text/css" rel="stylesheet">
+
+	<!-- custom style -->
+	<link href="{% static 'css/ui.css'%}" rel="stylesheet" type="text/css"/>
+	<link href="{% static 'css/responsive.css'%}" rel="stylesheet" media="only screen and (max-width: 1200px)" />
+
+	<!-- custom javascript -->
+	<script src="{% static 'js/script.js'}" type="text/javascript"></script>
+
+
+Lo probamos y vemos que ha cambiado casi todo, pero no me ha cogido las imagenes, para ello....
+
+tendremos que hacer lo mismo con todos los img....
+
+lin76		<img class="logo" src="{% static './images/logo01.png'%}">
+
+lin137	<img src="{% static 'images/banners/banner01.jpg'%}" class="img-fluid rounded">
+lin157      <a href="./product-detail.html" class="img-wrap"> <img src="{% static 'images/items/1006.jpg'%}"> </a>
+lin166      <a href="./product-detail.html" class="img-wrap"> <img src="{% static 'images/items/1006.jpg'%}"> </a>
+lin175	<a href="./product-detail.html" class="img-wrap"> <img src="{% static 'images/items/800.jpg'%}"> </a>
+lin184	<a href="./product-detail.html" class="img-wrap"> <img src="{% static 'images/items/700.jpg'%}"> </a>
+lin193	<a href="./product-detail.html" class="img-wrap"> <img src="{% static 'images/items/400.jpg'%}"> </a>
+lin202	<a href="./product-detail.html" class="img-wrap"> <img src="{% static 'images/items/500.jpg'%}"> </a>
+lin211	<a href="./product-detail.html" class="img-wrap"> <img src="{% static 'images/items/1002.jpg'%}"> </a>
+lin220	<a href="./product-detail.html" class="img-wrap"> <img src="{% static 'images/items/1004.jpg'%}"> </a>
+
+
+FACTORIZACIÓN DE COMPONENTES
+----------------------------
+
+ En todas la páginas web que hagamos va a tener que factorizar componentes.
+
+No es otra cosa que tanto el HEAD como el FOOTER siempre se van a repetir, ya que lo que va a cambiar en cada página va a ser el body.
+
+Vamos a crear en templates un archivo llamado base.html que va a ser la que va acontener la estructura de las páginas que apareceran.
+
+Lo primero que vamos a hacer es cortar hasta el header de home.html y lo vamos a pegar en base.html
+
+
+Una vez hecho vamos a crear una carpeta llamada includes
+
+Dentro de includes vamos a crear 2 archivos:
+	footer.html --> que va a contener el footer de la página --> cortamos y pegamos desde home.html
+	navbar.html --> que va a contener el navbar de la página --> cortamos y pegamos desde base.html (lin 45)
+
+
+Una vez hecho tendremos que agregarlo para ello nos vamos a base.html...
+
+	{% include 'includes/navbar.html' %} --> barra navbar
+
+	{% block content %}
+
+	{% endblock %}
+
+	{% include 'includes/footer.html' %} --> footer
+
+Una cosa, en navbar tenemos una imagen del logo, seguramente de error para ello tenemos que colocar en la línea 1
+
+	{% load static %}
+
+Con esto ya estará arreglado....
+
+CREACIÓN DE MODELO CATEGORIA
+----------------------------
+
+Vamos a crear una app para categorias
+
+en git bash ....
+
+py manage.py startapp category
+
+Una vez creada vamos a registrarlo, para ello nos vamos a ecommerce/settings.py
+
+    INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "category",
+]
+
+grabamos y nos vamos a category/models.py
+
+    from django.db import models
+
+# Create your models here.
+class Category(models.Model):
+    category_name = models.CharField(max_length=20, unique=True) --> que sea único
+    description = models.CharField(max_length=255, blank=True)  --> que no pueda ser nulo
+    slug = models.CharField(max_length=100, unique=True)
+    \___/
+    se utiliza en tipo ecommerce, está destino a estar al final de la url que representa la identidad.
+
+    cat_img = models.ImageField(upload_to='photos/categories', blank=True) --> ubicación de las imagenes
+
+    def __str__(self): --> la data va a ser visible dentro del modulo de administración dashboard de django, para que
+                            se pueda ver
+        return self.category_name
+
+Si quiero hacer el procedimiento de upload de django tenemos que instalar un paquete llamado pillow
+
+    pip install pillow (ya lo tenemos instalado)
+
+Para registrar la entidad category dentro de la página de administración de django nos vamos admin.py de category
+
+    from django.contrib import admin
+    from .models import Category
+
+    # Register your models here.
+    admin.site.register(Category) --> así registramos la clase Category
+
+
+Grabamos y ya podemos hacer el proceso de emigration, la creación de las entidades en un archivo, que ejecutaremos en el
+modulo de administración de django.
+
+    python manage.py makemigrations
+
+    $ python manage.py makemigrations
+    Migrations for 'category':
+    category\migrations\0001_initial.py
+        - Create model Category
+
+
+Comprobamos que hay una carpeta llamada migrations y aparece el fichero 0001_inital.py
+
+Si abrimos el fichero se verá el código que se ha generado con la estructura al interior de la aplicación admin de django
+
+Para ejecutar este código volvemos al git bush y tecleamos...
+
+    python manage.py migrate
+
+     python manage.py migrate
+Operations to perform:
+  Apply all migrations: admin, auth, category, contenttypes, sessions
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying category.0001_initial... OK
+  Applying sessions.0001_initial... OK
+
+
+Ya se ha generado la tabla al interior del django admin, para tratar de ingresar al administrador de django...
+
+    python manage.py runserver
+
+    si se nos ha olvidado el usuario....
+
+    Vamos a crear un superusuario para esta app
+
+    winpty python manage.py createsuperuser
+    Username (leave blank to use 'usuario'): pedro --> con el que se entra
+    Email address: ---> pedro.sanzr@outlook.es
+    Password:   --->
+    Password (again): -->
+    Superuser created successfully.
+
+    Una vez dentro vemos que la categoria que yo he creado era category, python le va a añadir siempre una 's' al final,
+    no existe una palabra llamada categorys, para ello vamos a ir a nuestro modelo  en models.py
+
+    class Category(models.Model):
+    category_name = models.CharField(max_length=20, unique=True)
+    description = models.CharField(max_length=255, blank=True)
+    slug = models.CharField(max_length=100, unique=True)
+    cat_img = models.ImageField(upload_to='photos/categories', blank=True)
+
+    class Meta:
+        verbose_name = 'category' --> verbose_name --> nombre de la entidad
+        verbose_name_plural = 'categories'
+
+    def __str__(self):
+        return  self.category_name
+
+    Una vez hecho tenemos que volver hacer una migration como antes para grabar los cambios....
+
+    $ python manage.py makemigrations
+    Migrations for 'category':
+    category\migrations\0002_alter_category_options.py
+        - Change Meta options on category
+
+ si te fijas ahora ha crado un archillo llamado 002_alter_category_optinos.py...
+
+ Ahora ejecutamos .....
+
+    $ python manage.py migrate
+    Operations to perform:
+    Apply all migrations: admin, auth, category, contenttypes, sessions
+    Running migrations:
+    Applying category.0002_alter_category_options... OK
+
+Con esto agregaria todos los cambios....
+
+Arrancamos nuevamente el servidor y vemos los cambios en admin de django que ya aparece como categories
+
+
+CREACION DE USUARIOS APP
+------------------------
+
+Lo primero que vamos a crear un nuevo app llamado accounts que va a ser nuestro modelo de seguridad para el ingreso
+de los usuarios...
+
+    python manage.py startapp accounts
+
+
+Como siempre lo primero que vamos a hacer es registrar nuestra app en ecommerce/settings.py
+
+
+    INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "category",
+    "accounts",
+]
+
+ahora nos vamos a accounts/models.py
+
+    from django.db import models
+    from django.contrib.auth.models import  AbstractBaseUser, BaseUserManager
+    # Create your models here.
+
+    class MyAccountManager(BaseUserManager):
+        def create_user(self, username,first_name,last_name,email, password=None):
+            if not email:
+                raise ValueError("El usuario debe tener un email")
+            if not username:
+                raise ValueError('El usuario debe tener un nombre de usuario')
+            user = self.model(
+                email = self.normalize_email(email),
+                username = username,
+                first_name = first_name,
+                last_name = last_name,
+            )
+        # para el password
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, first_name,last_name,email,username,password):
+        user = self.create_user(
+            email = self.normalize_email(email),
+            username= username,
+            password = password,
+            first_name = first_name,
+            last_name = last_name
+        )
+
+        # estos valores hace que sea un administrador
+        user.is_admin = True
+        user.is_active = True
+        user.is_staff = True
+        user.is_superadmin = True
+        # guardamos los valores
+        user.save(using=self._db)
+        return user
+
+class Account(AbstractBaseUser):
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    user_name = models.CharField(max_length=50, unique=True)
+    email = models.CharField(max_length=100, unique=True)
+    phone_number = models.CharField(max_length=10)
+
+    # campos atributo de django por defecto
+    date_joined = models.DateTimeField(auto_now_add=True) --> hora de cuando lo hizo
+    last_login = models.DateTimeField(auto_now_add=True) --> ultima vez logeado
+    is_admin = models.BooleanField(default=False)        --> booleano de si es admin
+    is_staff = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    is_superdadmin = models.BooleanField(default=False)
+
+    # lo que queremos que cuando inicie la sesion sea por el email no por el nombre...
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ['username','first_name','last_name']
+
+    # ahora quiero que estos métodos se incluyan en el modelo Account, para ello hacemos...
+    objects = MyAccountManager()
+
+    # dentro de la plataforma para que se liste los registros de una tabla que por defecto sea un label que represente
+    # cada registro....
+    def __str__(self):
+        return self.email
+
+    #otra función para ver que permisos tiene
+    def has_perm(self, obj=None):
+        return self.is_admin
+
+    # si es administrador debe indicar que tiene acceso a los modulos
+    def has_module_perm(self, add_label):
+        return True
+
+
+
+Una vez hecho esto necesitamos que ahora en adelante reconozca django como clase principal de almacenamiento este account
+para ello nos vamos a ecommerce/settings.py
+
+WSGI_APPLICATION = "ecommerce.wsgi.application" ---> después de aquí
+
+# definimos el modelo de autorización
+AUTH_USER_MODEL = 'accounts.Account'
+                   \_____/.\______/
+                  proyecto   clase que va a manejar la estructura de usuarios
+
+Guardamos y ahora tenemos que registrar esta clase Account como parte del modelo de django framework, para ello
+nos vamos a accounts/admin.py
+
+    from django.contrib import admin
+    from .models import Account
+    # Register your models here.
+    admin.site.register(Account)
+
+Antes de hacer una migración para que me genere las tablas vamos a resetear un poco el proyecto, para eso vamos a ir
+a la parte de la izda y hay un fichero db.sqlite3 (con todo lo que hemos hecho hasta el momento), lo vamos a eliminar.
+
+Lo siguiente que vamos a hacer es en category/migrations, tenemos generado 2 ficheros 0001_initial.py y
+0002_alter_category_options.py, los vamos a borrar también.
+
+
+Ahora sí, levantamos el servicio, para que vuelva a generar el fichero de db.sqlite3, ya lo volvemos a tener, y ahora
+hacemos la migración
+
+    $ python manage.py makemigrations
+    Migrations for 'accounts':
+    accounts\migrations\0001_initial.py
+        - Create model Account --->
+    Migrations for 'category':
+    category\migrations\0001_initial.py
+     - Create model Category --->
+
+y ahora...
+
+    $ python manage.py migrate
+
+   Operations to perform:
+   Apply all migrations: accounts, admin, auth, category, contenttypes, sessions
+   Running migrations:
+  Applying accounts.0001_initial... OK
+  Applying contenttypes.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying category.0001_initial... OK
+  Applying sessions.0001_initial... OK
+
+
+Aprovechamos para crear el superuser.....
+
+    $ winpty python manage.py createsuperuser
+    Email: paco.porras@yo.com
+    Username: paco
+    First name: paco
+    Last name: porras
+    Password:  ---> Mayusculas+minusculas+num+caracter especial -->Paco1234$
+    Password (again):
+    Superuser created successfully.
+
+
+DASHBOARD DEL USUARIO
+---------------------
+Vamos a hacer ciertos cambios....
+
+
+from django.contrib.auth.admin import UserAdmin --> importamos esto
+from .models import Account
+
+class AccountAdmin(UserAdmin):
+    #propiedades que quiero que se muestren
+    list_display=('email', 'first_name', 'last_name', 'username', 'last_login', 'date_joined', 'is_active')
+    #quiero que cuando le de click a una columna me linke hacia el detalle del usuario
+    list_display_link =('email', 'first_name', 'last_name')
+    # los campos de lectura sean solo de last_login y date_joined para que me diga cuando fue la última vez que se logueó y cuando fue
+    readonly_fields = ('last_login', 'date_joined')
+    ordering = ('-date_joined',)--> hay que poner esta coma ya que sino puede dar este mensaje de error...
+
+<class 'accounts.admin.AccountAdmin'>: (admin.E031) The value of 'ordering' must be a list or tuple.
+                                                                                      \____________/
+
+
+
+    filter_horizontal = ()
+    list_filter=()
+    fieldsets = ()
+
+
+# Para registrar el modelo
+admin.site.register(Account, AccountAdmin)
+
+
+Con esto hacemos que el password aparezca solo como lectura, ya no se puede modificar.
+
+
+REGISTRO DE CATEGORIAS E IMAGENES
+---------------------------------
+
+Lo primero que vamos a hacer es ir a ecommerce/settings.py
+
+    # creamos un media URL para los archivos tipo imagen
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR /'media'
+
+grabamos y vamos al archivo ecommerce/urls.py
+
+    from django.conf.urls.static import static
+    from django.conf import settings
+
+
+    urlpatterns = [
+        path("admin/", admin.site.urls),
+        path('', views.home, name="home"),
+
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)--> para que lea desde static
+
+Guardamos....
+
+MANEJO DE SLUG
+--------------
+
+Para que se autogenere cuando se escriba el nombre de la categoria....
+
+Nos vamos a category/admin.py
+
+    class CategoryAdmin(admin.ModelAdmin):
+    prepopulated_fields = {'slug': ('category_name',)} --> la clave es slug y el valor 'category_name'
+    list_display = ('category_name', 'slug') --> para que me muestre el category_name y 'slug'
+
+
+# Register your models here.
+admin.site.register(Category, CategoryAdmin)
+
+Guardamos y probamos
+
+INSTALACIÓN SQLITE3
+-------------------
+
+ vamos a descargarnos sqlitestudio
+
+ CREACIÓN DE ENTIDAD PRODUCTOS
+ -----------------------------
+
+ Vamos a crear una nueva app para productos....
+
+    python manage.py startapp store
+
+ lo primero que tenemos que hacer es registrarlo en ecommerce/settings.py
+
+ Creamos la estructura de esta clase en store/models.py
+
+    class Product(models.Model):
+        product_name = models.CharField(max_length=200, unique=True)
+        slug = models.CharField(max_length=200, unique=True)
+        description = models.TextField(max_length=500, blank=True)
+        price = models.IntegerField()
+        images = models.ImageField(upload_to='photos/products')
+        stock = models.IntegerField()
+        is_available = models.BooleanField(default=True) --> si está habilitado
+        category = models.ForeignKey(Category, on_delete=models.CASCADE)
+        create_date = models.DateTimeField(auto_now_add=True) --> me añade la fecha
+        modified_date = models.DateTimeField(auto_now=True) --> cuando se ha modificado
+
+        # me permite listar los productos por un label especifico
+        def __str__(self):
+            return self.product_name
+
+ Ahora nos iremos a admin.py...
+
+    from django.contrib import admin
+    from .models import Product
+
+
+    class ProductAdmin(admin.ModelAdmin):
+        # los campos que quiero listar
+        list_display = ('product_name', 'price', 'stock', 'category', 'modified_date', 'is_available')
+        # como quiero generar ciertos campos 'slug'
+        prepopulated_fields = {'slug' : ('product_name',)}
+
+    # Register your models here.
+    admin.site.register(Product, ProductAdmin)
+
+Guardamos lo que hemos hecho y vamos a la consola git...
+
+    $ python manage.py makemigrations
+    Migrations for 'store':
+    store\migrations\0001_initial.py
+        - Create model Product
+
+ y ahora...
+
+    $ python manage.py migrate
+    Operations to perform:
+    Apply all migrations: accounts, admin, auth, category, contenttypes, sessions, store
+    Running migrations:
+    Applying store.0001_initial... OK
+
+
+AGREGAR PRODUCTOS
+-----------------
+
+Para texto de prueba....
+
+    lipsum.com
+
+DESPLEGAR PRODUCTOS EN PAGINA HOME
+----------------------------------
+
+Nos vamos al archivo ecommerce/views.py...
+
+    from django.shortcuts import render
+    from store.models import Product
+
+    # va leer la data desde un template html
+    def home(request):
+        products = Product.objects.all().filter(is_available=True)
+
+        context = {
+            'products': products,
+
+        }
+        return render(request, 'home.html', context)
+
+    Una vez hecho tendremos que ir a la página templates/home.html
+
+    <div class="row">
+
+	    {% for product in products %}
+	    <div class="col-md-3">
+		    <div class="card card-product-grid">
+			    <a href="./product-detail.html" class="img-wrap"> <img src="{% static 'images/items/1006.jpg'%}"> </a>
+			    <figcaption class="info-wrap">
+				    <a href="./product-detail.html" class="title">{{product.product_name}}</a>
+				    <div class="price mt-1">$2400.00</div> <!-- price-wrap.// -->
+			    </figcaption>
+		    </div>
+	    </div> <!-- col.// -->
+	    {% endfor %}
+    </div> <!-- row.// -->
+
+</div><!-- container // -->
+</section>
+
+vamos a probarlo así de momento para ver que funciona....
+
+Ahora vamos con el resto....
+
+        <a href="./product-detail.html" class="img-wrap"> <img src="{{product.images.url}}"> </a> <!--imagen-->
+		<figcaption class="info-wrap">
+				<a href="./product-detail.html" class="title">{{product.product_name}}</a> <!--nombre-->
+	            <div class="price mt-1">{{product.price}}</div> <!-- precio -->
+
+CREACIÓN DE PÁGINA TIENDA STORE
+-------------------------------
+
+En el navbar tenemos la pestaña 'Tienda', la tendremos que crear porque hasta entonces me da error...
+
+vamos a la carpeta ecommerce/urls.py
+
+    from django.contrib import admin
+    from django.urls import path, include -->incluimos include
+    from . import views
+    from django.conf.urls.static import static
+    from django.conf import settings
+
+
+    urlpatterns = [
+        path("admin/", admin.site.urls),
+        path('', views.home, name="home"),
+        path('store/', include('store.urls')),-->
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+Ahora que ir hacia la app de store y creamos urls.py
+
+    from django.urls import path
+    from . import views --> desde la raiz me importe las vistas views
+
+    urlpatterns = [
+        path('', views.store, name='store'),
+    ]
+
+abrimos el store/views.py
+
+    from django.shortcuts import render
+
+
+    def store(request):
+        return render(request, 'store/store.html') --> le decimos que la respuesta le lleve a la carpeta store
+                                                        y el archivo store.html que no existe y lo creamos ahora
+
+
+   Una vez hecho esto vamos a la carpeta store y creamos store.html solo para probar...
+
+   <h1>La Tienda de Productos...</h1>
+
+
+   Arrancamos el proyecto y probamos en el navegador con esta dirección...
+
+    http://localhost:8000/store/
+
+ Vemos que funciona y ahora vamos a poner el codigo html que va a llevar la página store.html
+
+    {%extends 'base.html'%}
+
+    {% block content%}
+
+
+    {% endblock %}
+
+ Con esto ya tenemos la cabecera y el pie de página, faltaría el contenido dinamico, hay un archivo que nos hemos
+ descargado llamado store_template.html, el cual vamos a abrir, copiar y pegar debajo de
+
+    {% block content%}
+
+Desplegar productos en el Store
+-------------------------------
+
+Abrimos el fichero view.py de la carpeta store
+
+    def store(request):
+        products = Product.objects.all().filter(is_available=True)-->productos que están activos
+        product_count = products.count() --> cantidad de productos que hay en la BBDD
+
+        context ={ --> lo añadimos en un diccionario
+            'products': products,
+            'product_count': product_count
+
+        }
+        return render(request, 'store/store.html', context)
+
+
+Ahora vamos a la carpeta templates --> store.html
+
+                <span class="mr-md-auto"><b>{{product_count}}</b>  Productos Encontrados </span>
+
+            </div>
+      </header><!-- sect-heading -->
+
+     <div class="row">
+        {% for product in products %}
+            <div class="col-md-4"> --> esto define cada producto
+                <figure class="card card-product-grid">
+                    <div class="img-wrap">
+
+                        <img src="{{ product.images.url }}">
+
+                    </div> <!-- img-wrap.// -->
+                    <figcaption class="info-wrap">
+                        <div class="fix-height">
+                            <a href="./product-detail.html" class="title">{{product.name}}</a>
+                            <div class="price-wrap mt-2">
+                                <span class="price">{{product.price}}€</span>
+                            </div> <!-- price-wrap.// -->
+                        </div>
+                        <a href="#" class="btn btn-block btn-success">Agregar al Carrito </a>
+                    </figcaption>
+                </figure>
+            </div> <!-- col.// -->
+        {% endfor %}
+
+BUSCAR PRODUCTOS EN STORE
+-------------------------
+
+Lo primero que hacemos es ir a store/urls.py
+
+
+    urlpatterns = [
+    path('', views.store, name='store'),
+    path('<slug:category_slug>', views.store, name='products_by_category')
+          \__________________/
+         definido    el valor en la urls (localhost:8000/store/accesiorios-tech --> esto lo definimos en categorias
+         en admin                                              \_______________/    de admin
+
+]
+Guardamos y nos vamos a store/views.py
+
+    from django.shortcuts import render, get_object_or_404
+
+    def store(request, category_slug=None):
+        categories = None
+        products = None
+
+        if category_slug != None:
+            categories = get_object_or_404(Category, slug=category_slug)
+            products = Product.objects.filter(category=categories, is_available=True)
+            product_count = products.count()
+        else:
+            products = Product.objects.all().filter(is_available=True)
+            product_count = products.count()
+
+        context = {
+            'products': products,
+        'product_count': product_count
+
+         }
+        return render(request, 'store/store.html', context)
+
+
+CONSULTAR CATEGORIAS EN LISTA DESPLEGABLEY FILTROS DE PRODUCTOS
+---------------------------------------------------------------
+
+    Vamos a trabajar en el menú de Categoria que hay en el navbar.
+
+    Nos vamos a la carpeta de category y creamos un fichero llamado context_processors.py
+
+    from .models import Category
+
+    def menu_link(request):
+        links = Category.objects.all()
+        return dict(links=links)
+
+Guardamos y nos vamos a la carpeta ecommerce/settings.py
+
+    TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": ['templates'],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "category.context_processors.menu_link",
+            ],
+    Al hacer esto, estamos haciendo público el menu_links, cualquier template va a tener acceso a la lista
+    de categoria como links.
+
+  Guardamos y ahora nos vamos a templates/includes/navbar.html
+
+    Este es el menú deplegable de categorias.....
+        <div class="dropdown-menu">
+				{% for category in links %}
+				<a class="dropdown-item" href="#">{{category.category_name}}</a>
+				{% endfor %}
+	    </div>
+
+Guardamos y lo probamos
+
+Ahora nos toca hacer lo siguiente, cuando se seleccione una categoría se filtre y salga los productos de esa categoría.
+
+Nos vamos a templates/includes/navbar.html
+
+        <a class="dropdown-item" href="{{ category.get_url }}">{{category.category_name}}</a>
+                                        \__________________/
+                               me tiene que dar la url de la categoría
+
+Para ello nos vamos a category/models.py
+
+        from django.urls import reverse
+
+            def get_url(self):
+        return reverse('products_by_category', args=[self.slug])
+                        \___________________/  \_______________/
+                         definido en path          el valor actual
+                            store/urls.py          que tiene (categoria)
+
+                lo que va a hacer es:  http://localhost:8000/store/Ordenadores
+
+Esto es lo que va a devolver....
+
+            http://127.0.0.1:8000/store/musica-y-media
+
+
+Categorias de productos en el store
+-----------------------------------
+
+En la parte izquierda de la página también aparece un menú de categorías, vamos a modificarlo para que se pueda
+también desde ahí acceder a las distintas categorias.
+
+Nos vamos a  templates/store/store.html
+    Este es la línea de menú lateral está debajo del final de </head>
+                    <ul class="list-menu">
+                        <li><a href="{% url 'store'%}">Todos</a></li>
+                        {% for category in links %}
+                        <li><a href="{{category.get_url}}">{{category.category_name}}  </a></li>
+                        {% endfor %}
+                    </ul>
+
+Si seleccionamos por categoría saldrá la suya y en Todos aparecen todos otra vez, se nos ha olvidado en el
+menú desplegable poner también Todos, para ello volvemos a templates/includes/navbar.html
+
+            <div class="dropdown-menu">
+				<a class="dropdown-item" href="{% url 'store' %}">Todos</a> -->
+				{% for category in links %}
+				<a class="dropdown-item" href="{{ category.get_url }}">{{category.category_name}}</a>
+				{% endfor %}
+			</div>
+
+Creación de la página Detalle Producto
+---------------------------------------
+
+Cada elemento tiene un nombre con un link que debería de redirigirme a otra página con los detalles del producto
+
+Para ello lo primero nos vamos a store/urls.py
+
+    urlpatterns = [
+    path('', views.store, name='store'),
+    path('<slug:category_slug>/', views.store, name='products_by_category'),
+    path('<slug:category_slug>/<slug:product_slug'>/, views.product_detail, name='product_detail') -->
+]
+
+nos vamos a store/views.py
+
+    def product_detail(request, category_slug, product_slug):
+        return render(request, 'store/product_detail.html')
+
+
+ahora tendemos que crear la página templates/store/product_detail.html
+
+    <h1>Página detalle producto</h1>
+
+Guardamos y probamos que funcione....
+vamos a hacer una prueba poniendo manualmente en la barra del navegador...
+
+    http://127.0.0.1:8000/store/Ordenadores/cualquiera/
+
+Vemos que nos aparece en el navegador...
+
+    Página detalle producto
+
+Descargamos el fichero product_detail_template.html, lo abrimos y copiamos el código
+
+    {% extends 'base.html' %}
+
+    {% block content %}
+
+    Pegamos el código aquí...
+
+    {% endblock %}
+
+CONSULTA POR PRODUCTO SLUG EN LA PÁGINA
+----------------------------------------
+
+Al pegar el código viene hardcodeado, por lo que tenemos que empezar a personalizarlo para cada producto.
+
+Vamos a ir a store/views.py
+
+    def product_detail(request, category_slug, product_slug):
+        #puede que el usuario nos pase el slug de la BBDD y puede que no exista...
+        try:
+            single_product = Product.object.get(category__slug=category_slug, slug=product_slug)
+                                                \_____________/               \________________/
+                                                obtiene el valor                compara por el slug del
+                                                de la categoria                 producto
+        except Exception as e:
+            # si da un error
+            raise e
+        context= { --> si es correcto que lo guarde en un diccionario
+        'single_product': single_product,
+        }
+        return render(request, 'store/product_detail.html', context)
+
+
+
+Guardamos y vamos a templates/product_detail.html
+
+    <article class="gallery-wrap">
+        <div class="img-big-wrap">
+           <a href="#"><img src="{{ single_product.images.url}}"></a> -->
+        </div> <!-- img-big-wrap.// -->
+
+    </article> <!-- gallery-wrap .end// -->
+            </aside>
+            <main class="col-md-6 border-left">
+    <article class="content-body">
+
+    <h2 class="title">{{single_product.product_name}}</h2> -->
+
+    <div class="mb-3">
+        <var class="price h4">{{single_product.price}}€</var> -->
+    </div>
+
+    <p>{{single_product.description}}</p>  -->
+
+ Hay que fijarse que ya aparecen como single_product, ya que hereda las propiedades de Product
+
+
+ MANEJO DE URL EN EL PORTAL
+ --------------------------
+
+ Si seleccionamos cualquiera de los productos nos va a dar un error 404....
+
+
+
+Using the URLconf defined in ecommerce.urls, Django tried these URL patterns, in this order:
+
+    admin/
+    [name='home']
+    store/ [name='store']
+    store/ <slug:category_slug>/ [name='products_by_category']
+    store/ <slug:category_slug>/<slug:product_slug>/ [name='product_detail']
+    ^media/(?P<path>.*)$
+
+The current path, store/product-detail.html, didn’t match any of these.
+
+
+Para corregir esto vamos a tener que hacer lo siguiente....
+
+vamos a store/models.py
+
+    from django.urls import reverse
+
+    class Product(models.Model):
+        def get_url(self):
+            return reverse('product_detail', args=[self.category.slug, self.slug])
+                            \_____________/       \_________________/ \________/
+                             que llame a            slug categoria       slug producto
+                             product_detail         definido en urls.py
+
+    urls.py...
+
+    path('<slug:category_slug>/<slug:product_slug>/', views.product_detail, name='product_detail'),
+                \____________/                                                    \_____________/
+
+vamos a templates/home.html
+
+    <a href="./product-detail.html" class="img-wrap"> <img src="{{product.images.url}}"> </a><!--imagen-->
+    <a href="./product-detail.html" class="title">{{product.product_name}}</a><!--nombre producto-->
+
+    lo vamos a cambiar por....
+
+
+    <div class="row">
+
+	{% for product in products %}
+	<div class="col-md-3">
+		<div class="card card-product-grid">
+-->			<a href="{{product.get_url}}" class="img-wrap"> <img src="{{product.images.url}}"> </a><!--imagen-->
+			<figcaption class="info-wrap">
+-->				<a href="{{product.get_url}}" class="title">{{product.product_name}}</a><!--nombre producto-->
+				<div class="price mt-1">{{product.price}}</div> <!-- precio	 -->
+			</figcaption>
+		</div>
+	</div> <!-- col.// -->
+	{% endfor %}
+
+Guardamos cambios y probamos en
+
+    http://127.0.0.1:8000/
+
+Vemos que funciona....
+
+Ahora vamos a arreglar el boton de Tienda para que nos deje de dar el error 404....
+Nos vamos a templates/includes/navbar.html
+en la línea 48 tenemos....
+
+    <a href="./store.html" class="btn btn-outline-primary">Tienda</a>
+
+lo que tenemos que hacerle es...
+
+    <a href="{% url 'store' %}" class="btn btn-outline-primary">Tienda</a>
+
+Guardamos y probamos....
+
+Vamos a hacer también que cuando pulsemos el logo nos regrese al home, para ello no dejamos navbar.html...
+    <a href="./" class="brand-wrap">
+     <img class="logo" src="{% static './images/logo01.png'%}">
+
+vamos a cambiar el href...
+
+    <a href="{% url 'home' %}" class="brand-wrap">
+
+Vamos a arreglar también el botón que pone "Ver Todo" para ello tenemos que ir a home
+
+    <header class="section-heading">
+	    <a href="{% url 'store' %}" class="btn btn-outline-primary float-right">Ver Todo</a>
+	    <h3 class="section-title">Productos populares</h3>
+    </header>
+
+Por último vamos a arreglar el detalle de los productos, para ello....
+
+vamos a templates/store/store.html
+
+     <a href="./product-detail.html" class="title">{{product.product_name}}</a>
+
+Modificamos y ponemos el rediccionamiento de la página detalle...
+
+    <div class="img-wrap">
+
+-->    <a href="{{ product.get_url}}"><img src="{{ product.images.url }}"></a>
+
+        </div> <!-- img-wrap.// -->
+            <figcaption class="info-wrap">
+            <div class="fix-height">
+-->             <a href="{{ product.get_url}}" class="title">{{product.product_name}}</a>
+                <div class="price-wrap mt-2">
+                    <span class="price">{{product.price}}€</span>
+                </div> <!-- price-wrap.// -->
+            </div>
+
+Cuando se trata de una propiedad se pone con {{ product.get_url}} es un método dentro de Product
+Cuando se trata de un redicionamiento de url se pone {% url 'store' %} le decimos que vaya a la url definida en store
+
+
+Regla de Negocio para Stock
+---------------------------
+
+¿Qué pasaría si no hay stock de un producto?, habrá que hacer que en caso de no haber stock no debería  poder
+agregarse al carrito...
+
+Vamos a templates/store/product_detail.html....
+
+
+línea 71
+      <a href="./product-detail.html" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </a>
+
+Esto es lo que tendremos que hacer en caso de que tenga stock, si no hay ....
+
+    {% if single_product.stock <= 0 %}
+        <h5>Producto fuera de Stock</h5>
+    {% else %}
+        <a href="./product-detail.html" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </a>
+    {% endif %}
+
+Guardamos y ahora para probar tenemos que modificar un artículo el stockage...
+
+Vemos que en vez de el boton del carro aparece el texto del if...
+
