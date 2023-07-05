@@ -1,0 +1,665 @@
+DISEÑO DE VARIACIONES EN ECOMMERCE
+----------------------------------
+
+VARIANT EN ECOMMERCE
+---------------------
+
+Vamos a trabajar en las caracteristicas adicionales de un producto.
+
+Al lado derecho aparecerán cosas como color, tamaño, etc...
+
+A estas caracteristicas se le llaman variant
+
+Nos vamos a ir a templates/store/product_detail.html...
+
+En la línea 21
+
+<article class="content-body">
+
+    <h2 class="title">{{single_product.product_name}}</h2>
+
+    <div class="mb-3">
+        <var class="price h4">{{single_product.price}}€</var>
+    </div>
+
+    <p>{{single_product.description}}</p>
+
+
+    <hr>
+        <div class="row">
+            <div class="item-option-select">
+                <h6>Choose Color</h6>
+                <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-light">
+                    <input type="radio" name="radio_color"> Silver
+                  </label>
+                  <label class="btn btn-light">
+                    <input type="radio" name="radio_color" > Gray
+                  </label>
+                  <label class="btn btn-light active">
+                    <input type="radio" name="radio_color checked"> Gold
+                  </label>
+                  <label class="btn btn-light">
+                    <input type="radio" name="radio_color"> Black
+                  </label>
+                </div>
+            </div>
+        </div> <!-- row.// -->
+        <div class="row">
+            <div class="item-option-select">
+                <h6>Select Size</h6>
+                <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-light">
+                    <input type="radio" name="radio_color"> S
+                  </label>
+                  <label class="btn btn-light active">
+                    <input type="radio" name="radio_color" checked> M
+                  </label>
+                  <label class="btn btn-light">
+                    <input type="radio" name="radio_color"> L
+                  </label>
+                  <label class="btn btn-light">
+                    <input type="radio" name="radio_color"> XL
+                  </label>
+                </div>
+            </div>
+        </div> <!-- row.// -->
+        <hr>
+        {% if single_product.stock <= 0 %}
+        <h5>Producto fuera de Stock</h5>
+        {% else %}
+            {% if in_cart %}
+            <a href="#" class="btn  btn-success"> <span class="text">Producto Agregado al carro</span> <i class="fas fa-check"></i>  </a>
+            <a href="{% url 'carro' %}" class="btn  btn-outline-primary"> <span class="text">Ver carrito de compra</span> <i class="fas fa-eye"></i>  </a>
+            {% else %}
+            <a href="{% url 'add_cart' single_product.id %}" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </a>
+            {% endif %}
+        {% endif %}
+    </article>
+
+Vamos a personalizarlo empezando...
+
+Para el auto indentado usamos ctrl+alt+I
+
+En la línea 22 vamos a hacer lo siguiente...
+
+     <form action="{% url 'add_cart' single_product.id %}" method="get" >
+        <article class="content-body">
+        .....
+
+Y ahora vamos a cambiar el boton de agregar el carrito, para ello nos vamos a la linea 58
+
+{% if single_product.stock <= 0 %}
+  <h5>Producto fuera de Stock</h5>
+{% else %}
+   {% if in_cart %}
+       <a href="#" class="btn  btn-success"> <span class="text">Producto Agregado al carro</span> <i class="fas fa-check"></i>  </a>
+       <a href="{% url 'carro' %}" class="btn  btn-outline-primary"> <span class="text">Ver carrito de compra</span> <i class="fas fa-eye"></i>  </a>
+   {% else %}
+       <button type="submit" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </button>
+   {% endif %}
+{% endif %}
+
+CREAR MODELO VARIANT
+--------------------
+
+De momento los valores de los variant(Color, talla) son estáticos ya que los hemos definido nosotros, ahora lo que
+vamos a hacer es hacerlo dinámico.
+
+vamos a store/models.py
+Creamos una nueva clase....
+
+variation_category_choice = ( --> definimos previamente esta lista en la que definimos los distintos nombres....
+    ('color', 'color'),
+    ('talla', 'talla'),
+)
+class Variation(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variation_category = models.CharField(max_length=100, choices=variation_category_choice)
+    variation_value = models.CharField(max_length=100)
+    is_active = models.BooleanField(default=True)
+    created_date = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self): --> no podemos poner __str__ ya que nos va a devolver un objeto no un string
+        return self.product
+
+
+
+Una vez terminado, nos vamos a store/admin
+
+from .models import Product, Variation
+
+admin.site.register(Variation)
+
+Y creamos el proceso de migration.
+
+Usuario@LAPTOP-5O18608A MINGW64 ~/Desktop/curso Django/django/Ecommerce (main)
+$ py manage.py makemigrations
+Migrations for 'store':
+  store\migrations\0002_variation.py
+    - Create model Variation
+
+y hacemos la migración....
+
+Usuario@LAPTOP-5O18608A MINGW64 ~/Desktop/curso Django/django/Ecommerce (main)
+$ py manage.py migrate
+Operations to perform:
+  Apply all migrations: accounts, admin, auth, carro, category, contenttypes, sessions, store
+Running migrations:
+  Applying store.0002_variation... OK
+
+Ahora arrancamos de nuevo el servidor y nos metemos en admin, vemos que ha aparecido Variation dentro del menú, podemos
+hacer varias entradas como color de la camisa o talla, pero al hacerlo, vemos que no aparace en el desplegable de
+variation hechas ni color ni talla, para ello vamos a ir otra vez al archivo store/admin....
+
+class VariationAdmin(admin.ModelAdmin):
+    list_display = ('product', 'variation_category', 'variation_value', 'is_active')
+    list_editable = ('is_active',)
+    list_filter = ('product', 'variation_category', 'is_active')
+
+admin.site.register(Variation,VariationAdmin)
+                              ---------------
+
+Guardamos y probamos, vemos que ya viene con las caracteristica de ese producto(camisa blanca), y a la derecha el
+filtro de productos, categoria y si está activo.
+
+
+IMPLEMENTAR MODELO DINAMICO EN TEMPLATE
+---------------------------------------
+
+Vamos a templates/store/product_detail.html
+
+linea 35...
+
+<hr>
+    <div class="row">
+        <div class="item-option-select">
+            <h6>Seleccionar Color</h6>
+            <select class="form-control" name="color">
+                <option value="rojo">Rojo</option>
+                <option value="azul">Azul</option>
+                <option value="verde">Verde</option>
+            </select>
+        </div>
+    </div> <!-- row.// -->
+    <div class="row">
+        <div class="item-option-select">
+            <h6>Talla</h6>
+            <select class="form-control" name="talla">
+                <option value="small">S</option>
+                <option value="medium">M</option>
+                <option value="large">L</option>
+                <option value="xlarge">XL</option>
+            </select>
+        </div>
+    </div> <!-- row.// -->
+</hr>
+
+Vamos a hacer primero el color de la camisa...
+
+    <h6>Seleccionar Color</h6>
+    <select class="form-control" name="color">
+        {% for i in single_product.variation_set.all %}
+            <option value={{i.variation_value}}>{{i.variation_value}}</option>
+        {% endfor %}
+    </select>
+
+Guardamos y probamos, vemos que al seleccionar el color aparece tanto el color como la talla, eso lo tendremos que
+arreglar, para ello nos vamos a store/models.py
+
+class VariationManager(models.Manager):
+    def colors(self):
+        return super(VariationManager, self).filter(variation_category='color', is_active=True)
+    def tallas(self):
+        return super(VariationManager, self).filter(variation_category='talla', is_active=True)
+
+Y tenemos que hacer una instancia en la clase Variation para poder seleccionar color o talla, añadimos esta línea
+después de los atributos de la clase
+
+objects = VariationManager() --->
+
+Ahora tenemos que hacer que llamen a esta dos funciones dependiendo de lo que vamos a querer ver
+
+
+Guardamos y vamos a templates/store/product_detail.html
+
+    <hr>
+        <div class="row">
+            <div class="item-option-select">
+                <h6>Seleccionar Color</h6>
+                <select class="form-control" name="color" required>
+                    <option value="" disabled selected>Seleccione</option> --> aparecerá solo para seleccionar
+                    {% for i in single_product.variation_set.colors %}
+                        <option value='{{i.variation.value | lower}}'>{{i.variation_value | capfirst}}</option>
+                                                             \____/                       \_________/
+                                                            minusculas                     primera letra Mayúsculas
+                    {% endfor %}
+                </select>
+Guardamos y probamos
+
+
+ALMACENAR VARIANTS EN EL CARRO DE LA COMPRA
+--------------------------------------------
+
+Hasta ahora cuando introducíamos productos en el carro no nos aparecía ni el color ni la talla, ahora vemos como
+hacerlo....
+
+nos vamos a carro/models.py
+
+from store.models import Product, Variation
+
+class CartItem(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variations= models.ManyToManyField(Variation, blank=True) --> ManyToMany me va a almacenar una colección de Variation
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+
+
+Guardamos y vemos en admin...
+
+Vemos que no viene muy definida la información por lo que vamos a tener que hacer como antes con Variations, para ello
+volvemos a carro/admin.py
+
+from django.contrib import admin
+from .models import Cart, CartItem
+
+class CartAdmin(admin.ModelAdmin):
+    list_display = ('cart_id', 'date_added')
+
+class CartItemAdmin(admin.ModelAdmin):
+    list_display = ('product', 'cart', 'quantity', 'is_active')
+
+
+admin.site.register(Cart, CartAdmin)
+admin.site.register(CartItem, CartItemAdmin)
+
+Recuerda, cada vez que toquemos el modelo tenemos que ejecutar el proceso de migrations.
+
+Usuario@LAPTOP-5O18608A MINGW64 ~/Desktop/curso Django/django/Ecommerce (main)
+$  py manage.py makemigrations
+Migrations for 'carro':
+  carro\migrations\0003_cartitem_variations.py
+    - Add field variations to cartitem
+
+y ejecutamos...
+
+Usuario@LAPTOP-5O18608A MINGW64 ~/Desktop/curso Django/django/Ecommerce (main)
+$  py manage.py migrate
+Operations to perform:
+  Apply all migrations: accounts, admin, auth, carro, category, contenttypes, sessions, store
+Running migrations:
+  Applying carro.0003_cartitem_variations... OK
+
+arrancamos de nuevo el servidor...
+
+Vemos que funciona, pero ahora tenemos que capturar los variations que hemos escogido...
+
+vamos a ir a carro/views.py
+
+from store.models import Product, Variation
+
+def add_cart(request, product_id):
+    products = Product.objects.get(id=product_id)
+
+    # vamos a hacer que los variation se haga a una coleccion variable...
+    product_variation = []
+
+    if request.method == 'POST': --> le decimos que el metodo que vamos a utilizar en POST
+        for item in request.POST:
+            key = item  # nombre del Variation (color)
+            value = request.POST[key]  # el valor (verde)
+            try:
+                variation = Variation.objects.get(product=products, variation_category__iexact=key, variation_value__iexact=value)
+                                                                                      \_______/
+                                                                                      sea exacto a
+                product_variation.append(variation)
+
+            except:
+                pass
+    # creamos el carrito de la compra por si exite...
+    try:
+        carts = Cart.objects.get(cart_id=_cart_id(request))
+
+    except Cart.DoesNotExist:
+        carts = Cart.objects.create(
+            cart_id=_cart_id(request)
+        )
+    carts.save()
+
+    # insercción del registro
+    try:
+        cart_item = CartItem.objects.get(product=products, cart=carts)
+
+        # verificamos que hay productos en la collección
+        if len(product_variation) > 0:
+            cart_item.variations.clear() --> limpiamos la lista de cart_item
+            for item in product_variation:
+                cart_item.variations.add(item)
+
+        cart_item.quantity += 1
+        cart_item.save()
+
+    except CartItem.DoesNotExist:
+        cart_item = CartItem.objects.create(
+            product=products,
+            quantity=1,
+            cart=carts,
+        )
+        # verificamos que hay productos en la collección
+        if len(product_variation) > 0:
+            for item in product_variation:
+                cart_item.variations.add(item)
+        cart_item.save()
+
+    return redirect('carro')
+
+
+Vamos a detallar cada cart_item, para ello nos vamos a ir a store/models.py
+
+class Variation(models.Model):
+
+    def __unicode__(self): --> no podemos poner __str__ ya que nos va a devolver un objeto no un string
+        return self.product
+
+Para que me aparezca como yo quiero con color y tipo de color...
+
+        def __str__(self):
+        return self.variation_category + ' : ' + self.variation_value
+
+Ahora lo que tenemos que hacer es capturar en la página web el color y la talla, para ello vamos a
+templates/store/product_detail.html
+
+Linea 22
+      <form action="{% url 'add_cart' single_product.id %}" method="get" >
+
+Vamos a hacer lo siguiente...
+
+    <form action="{% url 'add_cart' single_product.id %}" method="POST" >
+        {% csrf_token%} --> para que los valores de este formulario pueda ser capturado por el servidor de django
+
+Guardamos y probamos, ahora vemos que en cart_item de admin nos ha seleccionado tanto el color como la talla, ahora lo
+que nos tocará hacer es en el template que aparezca la selección que he hecho.
+Nos vamos a ir a templates/store/carro.html
+
+Linea 37
+            <p class="text-muted small">Matrix: 25 Mpx <br> Marca: Canon</p>
+
+Vamos a dejarlo así....
+
+            <p class="text-muted small">
+                {% if cart_item.variations.all %}
+                    {% for item in cart_item.variations.all %}
+                        <strong>{{item.variation_category | capfirst}} :</strong> {{item.variation_value | capfirst}}<br>
+                    {% endfor %}
+                {% endif %}
+            </p>
+Guardamos y lo probamos...
+
+
+VARIATION EN LINEA DE PRODUCTO
+------------------------------
+
+Anteriormente habíamos hecho que cuando elegiamos un producto no nos dejaba seleccionar ninguno más y solo podiamos ir
+al carrito, lo vamos a quitar...
+
+en templates/store/product_details.html
+
+línea 63
+
+    {% if single_product.stock <= 0 %}
+        <h5>Producto fuera de Stock</h5>
+    {% else %}
+        {% if in_cart %}
+            <a href="#" class="btn  btn-success"> <span class="text">Producto Agregado al carro</span> <i class="fas fa-check"></i>  </a>
+            <a href="{% url 'carro' %}" class="btn  btn-outline-primary"> <span class="text">Ver carrito de compra</span> <i class="fas fa-eye"></i>  </a>
+        {% else %}
+            <button type="submit" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </button>
+        {% endif %}
+    {% endif %}
+
+    nos vamos a quedar con esta linea.....
+
+    <button type="submit" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </button>
+
+    quedando así
+
+    {% if single_product.stock <= 0 %}
+        <h5>Producto fuera de Stock</h5>
+    {% else %}
+        <button type="submit" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </button>
+    {% endif %}
+
+Ahora nos asalta una duda, en el ejemplo he agreago al carro una camisa blanca y una talla M, que pasaría si quiero
+una camisa azul y de talla una L, al hacerlo lo que va a hacer es coger el último valor introducido.
+
+Lo que hay que hacer es que se mantenga cada una de las selecciones que hagamos.
+
+    Nos vamos a carro/views.py
+
+def add_cart(request, product_id):
+
+    # insercción del registro
+    try:
+        cart_item = CartItem.objects.get(product=products, cart=carts)
+
+Vamos a cambiarlo por
+
+    # insercción del registro
+    try:
+        cart_item = CartItem.objects.create(product=products, quantity=1, cart=carts)
+
+
+ry:
+        cart_item = CartItem.objects.create(product=products, quantity=1, cart=carts)
+
+        # verificamos que hay productos en la collección
+        if len(product_variation) > 0:
+            cart_item.variations.clear()
+            for item in product_variation:
+                cart_item.variations.add(item)
+
+        --> aqui estaba esta linea...
+        cart_item.quantity += 1 --> esta línea la borramos ya que ponemos arriba ya la cantidad....
+        cart_item.save()
+
+    except CartItem.DoesNotExist:
+
+guardamos y probamos....
+
+Tenemos un par de problemas....
+
+El primero, si yo vuelvo a elegir un mismo producto con la misma talla, me lo tiene que sumar al que ya hay....
+
+Para ello volvemos a carro/views.py
+
+Vamos a cambiar desde la línea 43 quedando así...
+
+    is_cart_item_exists = CartItem.objects.filter(products=products, carts=carts).exists() --> me va a decir si existe
+
+    # insercción del registro
+    if is_cart_item_exists:
+        cart_item = CartItem.objects.filter(product=products, cart=carts) --> si existe que me lo filtre por cart y producto
+
+        # vamos a capturar los variations
+        ex_var_list = []
+        id = []
+
+        for item in cart_item:
+            existing_variation = item.variations.all()
+            ex_var_list.append(list(existing_variation))
+            id.append(item.id)
+
+        # hacemos la comparacion
+        if product_variation in ex_var_list:
+            # necesitamos el indice para poder actualizar el variation
+            index = ex_var_list.index(product_variation)
+            item_id = id[index]
+            item = CartItem.objects.get(products=products, id=item_id)
+            item.quantity += 1
+            item.save()
+        else:
+            item = CartItem.object.create(products=products, quantity=1, carts=carts)
+
+            # verificamos que hay productos en la collección
+            if len(product_variation) > 0:
+                item.variations.clear()
+                item.variations.add(*product_variation) -->(*product_variation) el * es porque quiero la colección
+            item.save()
+    else:
+        cart_item = CartItem.objects.create(
+            product=products,
+            quantity=1,
+            cart=carts,
+        )
+        # verificamos que hay productos en la collección
+        if len(product_variation) > 0:
+            cart_item.variations.clear()
+            cart_item.variations.add(*product_variation)
+
+        cart_item.save()
+
+guardamos y probamos....
+
+
+BOTONES DE CANTIDAD Y ELIMINAR VARIATIONS
+-----------------------------------------
+
+Vamos a templates/store/carro.html
+
+linea 58
+
+<div class="col">
+    <div class="input-group input-spinner">
+        <div class="input-group-prepend">
+            <a href="{% url 'borrar_cart' cart_item.product.id %}" class="btn btn-light" type="button" id="button-minus"><i class="fa fa-minus"></i></a>
+        </div>
+        <input type="text" class="form-control" value="{{cart_item.quantity}}"> <!-- este input es la cantidad de elementos-->
+        <div class="input-group-append">
+            <a href="{% url 'add_cart' cart_item.product.id %}" class="btn btn-light" type="button" id="button-plus"><i class="fa fa-plus"></i></a>
+        </div>
+    </div><!-- input-group -->
+</div><!-- col.// -->
+
+
+Recuerda que aquí estamos haciendo esto desde el method=GET, pero ahora estamos trabajando en POST, por lo que
+tendremos que hacer lo siguiente...
+
+<div class="input-group-append">
+    <form action="{% url 'add_cart' cart_item.product.id %}" method="post">
+        {% csrf_token %}
+        {% for item in cart_item.variations.all%} --> hacemos un campo oculto con la category y el valor
+            <input type="hidden" name="{{item.variation_category | lower}}" value="{{item.variation_value | capfirst}}">
+        {% endfor %}
+        <button class="btn btn-light" type="submit" id="button-plus"><i class="fa fa-plus"></i></button>
+    </form>
+</div>
+
+Grabamos y probamos, vemos que nos deja añadir más productos, para el decrimento de las cantidades volvemos a
+templates/store/carro.html
+
+Linea 49
+
+<!-- col.// -->
+<div class="col">
+    <div class="input-group input-spinner">
+        <div class="input-group-prepend">
+            <a href="{% url 'borrar_cart' cart_item.product.id cart_item.id %}" class="btn btn-light" type="button" id="button-minus"><i class="fa fa-minus"></i></a>
+                             \__________/                      \___________/
+                              vamos a tener                le tenemos que pasar el id
+                              que cambiar
+        </div>
+    ....
+
+Para cambiar la función borrar_cart vamos a carro/views.py
+
+línea 94
+
+def borrar_cart(request, product_id):
+    #me va a dar el objeto del carrito
+    cart = Cart.objects.get(cart_id=_cart_id(request))
+    #me va a dar el producto en cuestion
+    product = get_object_or_404(Product, id=product_id)
+    # y lo que contiene de productos y cantidades
+    cart_item = CartItem.objects.get(product=product, cart=cart)
+
+Vamos a tener que agregar el cart_item_id y hacer un par de cositas...
+
+# función para restar productos
+def borrar_cart(request, product_id, cart_item_id):
+    #me va a dar el objeto del carrito
+    cart = Cart.objects.get(cart_id=_cart_id(request))
+    #me va a dar el producto en cuestion
+    product = get_object_or_404(Product, id=product_id)
+
+    try:
+
+        # y lo que contiene de productos y cantidades
+        cart_item = CartItem.objects.get(product=product, cart=cart, id=cart_item_id)
+        if cart_item.quantity > 1:
+            cart_item.quantity -= 1
+            cart_item.save()
+        else:
+            cart_item.delete()
+    except:
+        pass
+
+    return redirect('carro')
+
+Ahora una vez terminado, tenemos que modificar el path, para ello vamos carro/urls.py
+
+    path('borrar_cart/<int:product_id>', views.borrar_cart, name="borrar_cart"),
+
+lo cambiamos añadiendo el cart_item_id
+
+    path('borrar_cart/<int:product_id>/<int:cart_item_id>/', views.borrar_cart, name="borrar_cart"),
+
+guardamos y probamos, vemos que funciona, ahora solo nos queda el botón eliminar.
+
+Para ello vamos a templates/store/carro.html
+
+Linea 75
+
+</td>
+    <td class="text-right">
+        <a href="{% url 'borrar_cart_item' cart_item.product.id %}" class="btn btn-danger">Eliminar</a>
+    </td>
+
+ y añadimos el cart_item.id
+
+     <a href="{% url 'borrar_cart_item' cart_item.product.id cart_item.id %}" class="btn btn-danger">Eliminar</a>
+
+ una vez hecho tenemos que volver a cambiar el path, para ello vamos a carro/urls.py
+
+    path('borrar_cart_item/<int:product_id>/', views.borrar_cart_item, name="borrar_cart_item"),
+
+ y le añadimos el cart_item_id...
+
+    path('borrar_cart_item/<int:product_id>/<int:cart_item_id>/', views.borrar_cart_item, name="borrar_cart_item"),
+
+ y volvemos a carro/views.py
+
+def borrar_cart_item(request, product_id):
+
+    cart = Cart.objects.get(cart_id=_cart_id(request))
+    product = get_object_or_404(Product, id=product_id)
+    cart_item = CartItem.objects.get(product=product, cart=cart)
+
+    cart_item.delete()
+
+    return redirect('carro')
+
+le tenemos que añadir el id de cart_item_id.....
+
+# función para la funcionalidad del botón eliminar
+def borrar_cart_item(request, product_id, cart_item_id):
+
+    cart = Cart.objects.get(cart_id=_cart_id(request))
+    product = get_object_or_404(Product, id=product_id)
+    cart_item = CartItem.objects.get(product=product, cart=cart, id=cart_item_id)
+
+    cart_item.delete()
+
+    return redirect('carro')
+
+Guardamos y probamos

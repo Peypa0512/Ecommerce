@@ -307,8 +307,8 @@ Ya se ha generado la tabla al interior del django admin, para tratar de ingresar
     Vamos a crear un superusuario para esta app
 
     winpty python manage.py createsuperuser
-    Username (leave blank to use 'usuario'): pedro --> con el que se entra
-    Email address: ---> pedro.sanzr@outlook.es
+    Username (leave blank to use 'usuario'): name --> con el que se entra
+    Email address: ---> correo que tengas
     Password:   --->
     Password (again): -->
     Superuser created successfully.

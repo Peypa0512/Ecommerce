@@ -1,0 +1,773 @@
+CREACIÓN DE CARRITO DE COMPRA
+-----------------------------
+
+Vamos a crear otra aplicación con el nombre de 'carro'
+
+python manage.py startapp carro
+
+Vamos a registrar la app en ecommerce/setting.py
+
+    INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "category",
+    "accounts",
+    "store",
+    "carro", -->
+    ]
+
+Guardamos y nos vamos al archivo ecommerce/urls.py
+
+    urlpatterns = [
+    path("admin/", admin.site.urls),
+    path('', views.home, name="home"),
+    path('store/', include('store.urls')),
+    path('carro/', include('carro.urls')) --> carro.url es la carpeta y el archivo
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+Guardamos, y ahora tendremos que crear carros, para ello vamos a carro y creamos el archivo urls.py
+
+    from django.urls import path
+    from . import views
+
+    urlspatterns =[
+        path('', views.carro, name="carro"),
+
+    ]
+Guardamos y con esto ya le hemos dado la url donde va a estar el carrito de la compra.
+
+Ahora tendremos que ir a carro/views.py para crear la función de tipo def
+
+    from django.shortcuts import render
+
+    def carro(request):
+        return render(request, 'store/carro.html')
+                                \_______________/
+                                lo tiene que ir a buscar a store
+
+
+Tenemos que ir a templates/store y crear el archivo carro.html, para probar solo pondremos está línea...
+
+    <h1>Página de Carro de Compra</h1>
+
+Guardamos all y probamos....
+
+Vemos que funciona, ahora se supone tenemos que descargarnos un fichero llamado cart_template.html,
+
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<section class="section-content padding -y bg">
+    <div class="container">
+
+    <!----------------------  Componente 1  ---------------------->
+
+     <div class="row">
+        <aside class="col-lg-9">
+     <div class="card">
+                <table class="table table-bordeless table-shopping-cart">
+                    <thead class ="text-muted">
+                        <tr class="small text-uppercase">
+                            <th scope="col">Producto</th>
+                            <th scope="col" width='120'>Precio</th>
+                            <th scope="col" class="text-right" width="200"></th>
+                        </tr>
+                    </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <figure class="itemside algin-items-center">
+                            <div class="aside"><img src="./images/items11.jpg" class="img-sm"></div>
+                            <figcaption class="info">
+                                <a href="#" class="title text-dark">Camera Canon EOS M50 Kit</a>
+                                <p class="text-muted small">Matrix: 25 Mpx <br> Marca: Canon</p>
+                            </figcaption>
+                            </figure>
+                        </td>
+                        <td>
+                            <!-- col.// -->
+                            <div class="col">
+                                <div class="input-group input-spinner">
+                                    <div class="input-group-prepend">
+                                    <button class="btn btn-light" type="button" id="button-plus"><i class="fa fa-minus"></i></button>
+                                    </div>
+                                    <input type="text" class="from-control" value="1">
+                                    <div class="input-group-append">
+                                    <button class="btn btn-light" type="button" id="button-minus"><i class="fa fa-plus"></i></button>
+                                    </div>
+                                    </div><!-- input-group -->
+                            </div><!-- col.// -->
+                        </td>
+
+                    <td>
+                        <div class="price-wrap">
+                            <var class="price">1156.00€</var>
+                            <small class="text-muted">315.20€ cada uno</small>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                    <a href="" class="btn btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+                </tbody>
+                </table>
+     </div>
+        </aside>    <!-- col.// -->
+      <aside class="col-lg-3">
+         <div class="card">
+         <div class="card-body">
+           <dl class="dlist-align">
+                <dt>Total:</dt>
+                <dd class="text-right">59.97€</dd>
+            </dl>
+            <dl class="dlist-align">
+                <dt>Tax:</dt>
+                <dd class="text-right">10.00€</dd>
+            </dl>
+            <dl class="dlist-align">
+                <dt>Precio Total:</dt>
+                <dd class="text-right"><strong>69.97€</strong></dd>
+            </dl>
+            <hr>
+            <p class="text-center mb-3">
+                <img src="{% static './images/misc/payments.png'%}" height="26">
+            </p>
+            <a href="./place-order.html" class="btn btn-primary btn-block">Pagar</a>
+            <a href="./store.html" class="btn btn-primary btn-block">Continua comprando</a>
+            </div> <!-- card-body -->
+        </div> <!-- card.// -->
+      </aside> <!-- COL.// -->
+    </div> <!-- row.// -->
+    <!--------------------------  Fin componente 1 --------------------->
+</div>
+</section><!-- container -->
+
+<!-------------------------- seccion contenido fin -------------->
+
+
+{% endblock %}
+
+
+Una cosa aclaratoria, en el lado del total aparece una serie de imagenes como forma de pago,
+esto va a ser estático por lo que hay que hacer lo siguiente....
+
+{% extends 'base.html' %}
+{% load static %} --> aqui lo tenemos que definir para poder hacerlo estático
+{% block content %}
+    <img src="{% static './images/misc/payments.png'%}" height="26">
+
+
+CREACION DE ESTRUCTURA SHOOPINGCART
+-----------------------------------
+
+Tenemos que crear las estructura, las columnas y las tablas para mi carro de la compra.
+
+Voy a crear 2 clases: una cart y otro cart-item
+
+Nos vamos a la carpeta carro/models.py
+
+from django.db import models
+from store.models import Product
+
+# clase para el carrito de la compra
+class Cart(models.Model):
+    cart_id = models.CharField(max_length=250, blank=True)
+    date_added = models.DateField(auto_now_add=True)
+
+    # para que imprima el valor que represente cada valor del carrito con el id del carrito de la compra
+    def __str__(self):
+        return self.cart_id
+
+
+class CartItem(models.Model):
+    # le vamos a decir que se va a relacionar con la entidad Product y le indicamos que si elimina el
+    # producto, se elimine este item o registro
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    # Tambien va a tener esta relación con la clase Cart
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+
+    # la cantidad
+    quantity = models.ImageField()
+    is_active = models.BooleanField(default=True)
+
+    # para que imprima en el modulo de administración el producto
+    def __str__(self):
+        return self.product
+
+Guardamos y el siguiente paso es registrar estas entidades de cart y cartItem dentro del archivo admin.py
+
+    from django.contrib import admin
+    from .models import Cart, CartItem
+
+    admin.site.register(Cart)
+    admin.site.register(CartItem)
+
+Guardamos all y ahora en el terminal hacemos....
+
+    Usuario@LAPTOP-5O18608A MINGW64 ~/Desktop/curso Django/django/Ecommerce (main)
+    $ py manage.py makemigrations
+    Migrations for 'carro':
+    carro\migrations\0001_initial.py
+        - Create model Cart
+        - Create model CartItem
+
+Vemos en la carpeta migrations el archivo 0001_inital.py, y ahora ejecutamos el archivo migrations para
+hacer las tablas....
+
+    Usuario@LAPTOP-5O18608A MINGW64 ~/Desktop/curso Django/django/Ecommerce (main)
+    $ py manage.py migrate
+    Operations to perform:
+        Apply all migrations: accounts, admin, auth, carro, category, contenttypes, sessions, store
+    Running migrations:
+        Applying carro.0001_initial... OK
+
+Y por último ejecutamos py manage.py runserver para levantar el servidor y probar
+
+    http://127.0.0.1:8000/admin/
+
+ Vemos que ahora hay una pestaña de Carro con las 2 clases creadas...
+
+AGREGAR ELEMENTOS AL CARRITO DE LA COMPRA
+--------------------------------------------
+Lo que vamos a hacer es elegir alguno de los productos y en boton de Agregar al shopping cart,
+que se genere el registro en la BBDD.
+
+Lo primero vamos a la carpeta carro/views.py
+
+from django.shortcuts import render, redirect
+
+from carro.models import Cart, CartItem
+from store.models import Product
+
+# va a ser una función privada (por eso empieza por '_', para ver si está creado el carro, sino lo crea)
+def _cart_id(request):
+    cart = request.session_key
+    if not cart:
+        cart = request.session.create()
+    return cart
+
+
+# representa la creación del carrito de compra
+def add_cart(request, product_id):
+    product = Product.objects.get(id=product_id)
+
+    # creamos el carrito de la compra por si exite...
+    try:
+        cart = Cart.objects.get(cart_id=_cart_id(request)) _cart_id --> va a llamar para ver si está creado el carro
+    except Cart.DoesNotExist:
+        cart = Cart.objects.create(cart_id=_cart_id(request))
+    cart.save()
+
+    # insercción del registro
+    try:
+        cart_item=CartItem.objects.get(product=product, cart=cart)
+        cart_item.quantity +=1 --> le va a sumar por defecto 1
+        cart_item.save()
+
+    except CartItem.DoesNotExist:
+        cart_item = CartItem.objects.create(product=product, quantity=1, cart = cart) --> lo va a crear
+        cart_item.save()
+
+    return redirect('cart')
+
+
+
+# envio a la página del carro
+def carro(request):
+    return render(request, 'store/carro.html')
+
+Grabamos y ahora nos tenemos que ir a carro/urls.py
+
+    from . import views
+
+    urlpatterns = [
+        path('', views.carro, name="carro"),
+        path('add_cart/<int:product_id>/', views.add_cart, name="add_cart"),
+                       \______________/
+                       me devolverá el id del producto
+    ]
+Guardamos y vamos a ir a template/store/product_detail.html
+
+<a href="{% url 'add_cart' single_product.id %}" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </a>
+          \______________/\_________________/
+          me redirecciona   me va a dar el id que necesito
+     path('add_cart/<int:product_id>/', views.add_cart, name="add_cart")
+
+IMPLEMENTAR DATA DE CARRITO DE COMPRA
+-------------------------------------
+
+Vamos a tratar la lógica para consultar la BBDD
+
+Nos vamos a carts/views.py
+
+    from django.core.exceptions import ObjectDoesNotExist
+
+    # envio a la página del carro
+    def carro(request, total=0, quantity=0, cart_items=None):
+        try:
+            cart = Cart.objects.get(cart_id=_cart_id(request))
+            cart_items= CartItem.objects.filter(cart=cart, is_active=True)
+            for cart_item in cart_items:
+            #para saber los productos y el precio
+            total += (cart_item.product.price * cart_item.quantity)
+            quantity += cart_item.quantity
+        except ObjectDoesNotExist:
+            pass # solo ignora la excepción
+
+        context = {
+            'total': total,
+            'quantity': quantity,
+            'cart_items': cart_items,
+        }
+         return render(request, 'store/carro.html', context)
+
+Guardamos y lo primero probamos que la página se vea bien....
+
+Ahora tenemos que hacer que este template reciba los datos correctos...
+
+Vamos a la carpeta templates/store/carro.html
+
+Vamos a poner un bucle for para que me vaya poniendo todos los items que tengo en el carro...
+
+        <tbody>
+            {%  for cart_item in cart_items %}
+                <tr>
+                        <td>
+                            <figure class="itemside algin-items-center">
+                            <div class="aside"><img src="./images/items11.jpg" class="img-sm"></div>
+                            <figcaption class="info">
+                                <a href="#" class="title text-dark">Camera Canon EOS M50 Kit</a>
+                                <p class="text-muted small">Matrix: 25 Mpx <br> Marca: Canon</p>
+                            </figcaption>
+                            </figure>
+                    </td>
+                    <td>
+                            <!-- col.// -->
+                            <div class="col">
+                                <div class="input-group input-spinner">
+                                    <div class="input-group-prepend">
+                                    <button class="btn btn-light" type="button" id="button-plus"><i class="fa fa-minus"></i></button>
+                                    </div>
+                                    <input type="text" class="from-control" value="1">
+                                    <div class="input-group-append">
+                                    <button class="btn btn-light" type="button" id="button-minus"><i class="fa fa-plus"></i></button>
+                                    </div>
+                                    </div><!-- input-group -->
+                            </div><!-- col.// -->
+                        </td>
+
+                        <td>
+                        <div class="price-wrap">
+                            <var class="price">1156.00€</var>
+                            <small class="text-muted">315.20€ cada uno</small>
+                        </div>
+                    </td>
+                    <td class="text-right">
+                    <a href="" class="btn btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+            {% endfor   %}
+        </tbody>
+
+
+Guardamos y vamos a probar a meter algún item más en admin/carro/cart_items, al añadir da un error....
+
+TypeError at /admin/carro/cartitem/add/
+
+__str__ returned non-string (type Product)
+
+Request Method: 	POST
+Request URL: 	http://127.0.0.1:8000/admin/carro/cartitem/add/
+Django Version: 	4.2
+Exception Type: 	TypeError
+Exception Value:
+
+__str__ returned non-string (type Product)
+
+Exception Location: 	C:\Users\Usuario\Desktop\curso Django\django\Ecommerce\env\lib\site-packages\django\contrib\admin\options.py, line 926, in log_addition
+Raised during: 	django.contrib.admin.options.add_view
+Python Executable: 	C:\Users\Usuario\Desktop\curso Django\django\Ecommerce\env\Scripts\python.exe
+Python Version: 	3.10.9
+Python Path:
+
+['C:\\Users\\Usuario\\Desktop\\curso Django\\django\\Ecommerce',
+ 'C:\\Program Files\\Python310\\python310.zip',
+ 'C:\\Program Files\\Python310\\DLLs',
+ 'C:\\Program Files\\Python310\\lib',
+ 'C:\\Program Files\\Python310',
+ 'C:\\Users\\Usuario\\Desktop\\curso Django\\django\\Ecommerce\\env',
+ 'C:\\Users\\Usuario\\Desktop\\curso '
+ 'Django\\django\\Ecommerce\\env\\lib\\site-packages']
+
+Server time: 	Thu, 25 May 2023 11:15:35 +0000
+
+Esto es debido a que intenta imprimir un String de Product, pero lo que devuelve es un int.
+
+
+Para solucionarlo vamos a carro/model.py
+
+    class CartItem(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+
+    # teniamos def __str__(self):
+    def __unicode__(self):
+        return self.product
+
+Guardamos y volvemos a probar...
+
+Vamos a personalizar cada uno de los items que hemos seleccionado, para ello vamos
+a templates/store/carro.html
+
+    <figcaption class="info">
+        <a href="#" class="title text-dark">{{cart_item.product.product_name}} Kit</a>
+        <p class="text-muted small">Matrix: 25 Mpx <br> Marca: Canon</p>
+    </figcaption>
+
+    ...
+
+     <input type="text" class="form-control" value="{{cart_item.quantity}}"> <!-- este input es la cantidad de elementos-->
+
+     ...
+
+     <div class="price-wrap">
+        <var class="price">{{cart_item.subtotal}}€</var>
+        <small class="text-muted">{{cart_item.product.price}}€ cada uno</small>
+     </div>
+
+ Guardamos y lo probamos...
+
+ Vemos que no me sale el subtotal de los productos que estoy comprando, para ello tenemos que hacer
+ una función que me lo refleje...
+
+    <var class="price">{{cart_item.subtotal}}€</var>
+
+ Vamos a carro/models.py
+
+     def subtotal(self):
+        return self.product.price*self.quantity
+
+ Guardamos y probamos...
+
+ MANTENIMIENTO DE CARRITO DE COMPRAS
+ -----------------------------------
+
+ Ahora nos toca modificar el lado derecho en el que va a venir la cuenta a pagar.
+
+ Vamos primero a carro/views.py
+
+ def carro(request, total=0, quantity=0, cart_items=None):
+    try:
+        cart = Cart.objects.get(cart_id=_cart_id(request))
+        cart_items= CartItem.objects.filter(cart=cart, is_active=True)
+        for cart_item in cart_items:
+            #para saber los productos y el precio
+            total += (cart_item.product.price * cart_item.quantity)
+            quantity += cart_item.quantity
+        iva = (21 * total) / 100 --> hallamos el iva
+        Precio_total = total + iva --> hallamos el precio total
+    except ObjectDoesNotExist:
+        pass # solo ignora la excepción
+
+    context = {
+        'total': total,
+        'quantity': quantity,
+        'cart_items': cart_items,
+        'iva': iva, -->
+        'Precio_total': Precio_total -->
+    }
+    return render(request, 'store/carro.html', context)
+
+ Guardamos y ahora volvemos a templates/store/carro.html
+
+            <dl class="dlist-align">
+                <dt>Total:</dt>
+                <dd class="text-right">{{total}}€</dd> -->
+            </dl>
+            <dl class="dlist-align">
+                <dt>Tax:</dt>
+                <dd class="text-right">{{iva}}€</dd> -->
+            </dl>
+            <dl class="dlist-align">
+                <dt>Precio Total:</dt>
+                <dd class="text-right"><strong>{{Precio_total}}€</strong></dd> -->
+            </dl>
+
+ Cosas que nos quedan pendientes:
+
+    - Poner sumar o restar productos
+
+    Vamos a carro.html
+
+         <div class="input-group-prepend">
+            <button class="btn btn-light" type="button" id="button-minus"><i class="fa fa-minus"></i></button>
+         </div>
+
+         <div class="input-group-append">
+            <button class="btn btn-light" type="button" id="button-plus"><i class="fa fa-plus"></i></button>
+         </div>
+
+    Vamos a hacer varias modificaciones.....
+
+    Para poder añadir más productos....
+        <a href="{% url 'add_cart' cart_item.product.id %}" class="btn btn-light" type="button" id="button-plus"><i class="fa fa-plus"></i></a>
+                  \_______________/\_____________________/
+                lo tenemos definido     nos va a dar el id
+                en views.py add_cart
+
+    Ahora necesitamos hacer otra función para poder restarle productos..
+
+    def borrar_cart(request, product_id):
+        #me va a dar el objeto del carrito
+        cart = Cart.objects.get(cart_id=_cart_id(request))
+
+        #me va a dar el producto en cuestión
+        product = get_object_or_404(Product, id=product_id)
+
+        # y lo que contiene de productos y cantidades
+        cart_item = CartItem.objects.get(product=product, cart=cart)
+
+        if cart_item.quantity > 1:
+            cart_item.quantity -= 1
+            cart_item.save()
+        else:
+            cart_item.delete()
+
+        return redirect('carro')
+
+Una vez hecho nos vamos a carro/urls.py
+
+    urlpatterns = [
+        path('', views.carro, name="carro"),
+        path('add_cart/<int:product_id>/', views.add_cart, name="add_cart"),
+        path('borrar_cart/<int:product_id>/', views.borrar_cart, name="borrar_cart"),
+
+    ]
+
+Y por último vamos a templates/store/carro.html
+         <a href="{% url 'borrar_cart' cart_item.product.id %}" class="btn btn-light" type="button" id="button-minus"><i class="fa fa-minus"></i></a>
+
+     Con esto ya tendriamos corregido este apartado...
+
+        - Dar Uso al botón Eliminar
+
+     Vamos a carro/views.py
+
+            # función para la funcionalidad del botón eliminar
+            def borrar_cart_item(request, product_id):
+
+                cart = Cart.objects.get(cart_id=_cart_id(request))
+                product = get_object_or_404(Product, id=product_id)
+                cart_item = CartItem.objects.get(product=product, cart=cart)
+
+                cart_item.delete()
+
+                return redirect('carro')
+
+Ahora nos toca hacer el path en urls.py
+            urlpatterns = [
+                path('', views.carro, name="carro"),
+                path('add_cart/<int:product_id>/', views.add_cart, name="add_cart"),
+                path('borrar_cart/<int:product_id>/', views.borrar_cart, name="borrar_cart"),
+                path('borrar_cart_item/<int:product_id>/', views.borrar_cart_item, name="borrar_cart_item"),
+
+            ]
+
+Por último vamos a templates/store/carro.html
+
+Linea 58
+         <a href="" class="btn btn-danger">Eliminar</a>
+
+         Lo dejamos así:
+
+         <a href="{% url 'borrar_cart_item' cart_item.product.id %}" class="btn btn-danger">Eliminar</a>
+
+Ahora guardamos y lo probamos
+
+REVISAR SI PRODUCTO EXISTE EN CARRITO DE COMPRAS
+------------------------------------------------
+
+Tenemos que revisar que existen existencias de alguno de los productos, y si no tiene que en la pantalla
+salga algo diciendo que no hay existencias.
+
+Lo primero que vamos a hacer es ir a templates/store/carro.html
+
+     <!----------------------  Componente 1  ---------------------->
+    <!--- solo va a aparecer si hay existencia del producto -->
+     {% if not cart_items %}
+        <h3 class="text-center">El Carrito de compras está vacio</h3>
+
+        <div class="text-center">
+            <a href="{% url 'store' %}" class="btn btn-primary">Para seguir comprando pulsa aquí</a>
+        </div>
+     {% else %}
+
+        aqui aparecerá los productos seleccionados anteriormente....
+     <!--------------------------  Fin componente 1 --------------------->
+     {% endif %}
+
+Con esto ya lo tendriamos, guardamos y lo probamos....
+
+
+Y si tenemos este producto en otro carrito de la comprao ya está incluido en el carro de compras.
+
+vamos a ir a store/views.py
+
+from carro.models import CartItem
+from carro.views import _cart_id
+
+
+def product_detail(request, category_slug, product_slug):
+    #puede que el usuario nos pase el slug de la BBDD y puede que no exista...
+    try:
+        single_product = Product.objects.get(category__slug=category_slug, slug=product_slug)
+
+        # le vamos a pedir que me diga con cart__cart_id(para poder obtener la propiedad del id)  y el producto (si existe)
+        # con .exists() me va dar un booleano que será True o false
+        in_cart = CartItem.objects.filter(cart__cart_id=_cart_id(request), product=single_product).exists()
+
+    except Exception as e:
+        # si da un error
+        raise e
+    context = {
+        'single_product': single_product,
+        'in_cart': in_cart, --> lo añadimos al diccionario para que me diga si exite o no
+    }
+    return render(request, 'store/product_detail.html', context)
+
+
+vamos a ir a templates/store/product_detail.html
+
+Linea 72
+
+    {% if single_product.stock <= 0 %}
+        <h5>Producto fuera de Stock</h5>
+    {% else %}
+        <a href="{% url 'add_cart' single_product.id %}" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </a>
+    {% endif %}
+
+Va a quedar así...
+
+Lo que vamos a hacer es que si elegimos otra vez algún producto que nos salga un mensaje diciendo que ya
+está agregado al carro y me de la opción de poder verlo....
+
+        {% if single_product.stock <= 0 %}
+        <h5>Producto fuera de Stock</h5>
+        {% else %}
+            {% if in_cart %}
+-->         <a href="#" class="btn  btn-success"> <span class="text">Producto Agregado al carro</span> <i class="fas fa-check"></i>  </a>
+-->         <a href="{% url 'carro' %}" class="btn  btn-outline-primary"> <span class="text">Ver carrito de compra</span> <i class="fas fa-eye"></i>  </a>
+            {% else %}
+-->         <a href="{% url 'add_cart' single_product.id %}" class="btn  btn-primary"> <span class="text">Agregar al shopping cart</span> <i class="fas fa-shopping-cart"></i>  </a>
+            {% endif %}
+        {% endif %}
+
+Guardamos y lo probamos....
+
+CARRITO DE COMPRA BADGE
+-----------------------
+
+Vamos a hacer una funcionalidad que me cuente el nº de items que tiene mi carro de compras y me lo tendría
+que mostrar en la parte superior en el icono del carrito.
+
+Creamos en carro/context_processors.py
+
+#vamos a crear las referencias que necesitamos...
+from .models import Cart, CartItem
+from .views import _cart_id
+
+def counter(request):
+    cart_count = 0
+
+    try:
+        cart = Cart.objects.filter(cart_id=_cart_id(request))
+        #me va a devolver una colección pero solo quiero 1 elemento, pero que se apunte a ese elemento
+        cart_items = CartItem.objects.all().filter(cart=cart[:1])
+
+        # quiero saber la cantidad total de productos
+        for cart_item in cart_items:
+            cart_count += cart_item.quantity
+    except Cart.DoesNotExist:
+        cart_count=0
+    return dict(cart_count=cart_count)
+
+Ahora tenemos que registrarlo dentro de mi proyecto tendremos que ir ecommerce/setting.py
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": ['templates'],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "category.context_processors.menu_link",
+                "carro.context_processors.counter", --> lo añadimos al final
+            ],
+
+Guardamos lo echo anteriormente....
+
+Ahora tenemos que trabajar el icono que está en template/includes/navbar.html
+
+Linea 71
+
+    <a href="./cart.html" class="widget-header pl-3 ml-3">
+	    <div class="icon icon-sm rounded-circle border"><i class="fa fa-shopping-cart"></i></div>
+		<span class="badge badge-pill badge-danger notify">0</span>
+	</a>
+
+	quedando así...
+
+	<a href="{% url 'carro' %}" class="widget-header pl-3 ml-3">
+	    <div class="icon icon-sm rounded-circle border"><i class="fa fa-shopping-cart"></i></div>
+		<span class="badge badge-pill badge-danger notify">{{cart_count}}</span>
+	</a>
+
+Guardamos y probamos...
+
+Ajuste en Link del Carrito de Compra
+------------------------------------
+
+En la ventana de Store tenemos un icono que pone Agregar al Carrito, pero no funciona, ya que la línea está
+asi....
+
+templates/store/store.html
+
+Linea 144
+
+    <a href="#" class="btn btn-block btn-success">Agregar al Carrito </a>
+
+ Tenemos que hacer que al pulsar en él nos lleve a carro.html...
+
+    <a href="{% url 'add_cart' product.id %}" class="btn btn-block btn-success">Agregar al Carrito </a>
+
+ Guardamos y probamos...
+
+ Otra cosa que tenemos que modificar es que hay un icono debajo de pagar que pone "Continuar comprando",
+ para ello vamos a templates/store/carro.html
+
+Línea 93
+    <a href="{% url 'store' %}" class="btn btn-primary btn-block">Continua comprando</a>
+
+
+ Otra cosa que deberíamos cambiar es la descripción del producto...
+
+ Linea 36
+    <a href="#" class="title text-dark">{{cart_item.product.product_name}} Kit</a>
+    <p class="text-muted small">Matrix: 25 Mpx <br> Marca: Canon</p>
+
+    Quedando así...
+    --> le ponemos la dirección url donde está el producto
+    <a href="{{ cart_item.product.get_url }}" class="title text-dark">{{cart_item.product.product_name}} Kit</a>
+    <p class="text-muted small">Matrix: 25 Mpx <br> Marca: Canon</p>

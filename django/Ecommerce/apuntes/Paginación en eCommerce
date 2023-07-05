@@ -1,0 +1,282 @@
+PAGINACIÓN EN ECOMMERCE
+-----------------------
+
+Basicamente es agrupar los productos en grupos de 5 productos por página, ayudandonos básicamente luego de la
+páginación que viene al final de la página.
+
+Nos vamos a store/views.py
+
+def store(request, category_slug=None):
+    categories = None
+    products = None
+
+    if category_slug != None:
+        categories = get_object_or_404(Category, slug=category_slug)
+        products = Product.objects.filter(category=categories, is_available=True)
+        product_count = products.count()
+    else:
+        products = Product.objects.all().filter(is_available=True)
+        # vamos a llamar a una instancia de Paginator
+        paginator = Paginator(products, 5) -->
+
+        # como acceder a cada uno de los grupos con el parametro ?page=1 del navegador
+        page = request.GET.get('page') -->
+
+        # ahora que me envie esa página los productos
+        paged_products = paginator.get_page(page) -->
+        product_count = products.count()
+
+    context = {
+        'products': paged_products, --> en vez de llamar a product ponemos el paginador
+        'product_count': product_count
+
+    }
+    return render(request, 'store/store.html', context)
+
+Esto simplemente lo que va a hacer es agrupar en 5 productos las páginas, pero si quiero ver la hoja 2 en el
+navegador tendré que poner ?page=2
+
+EVENTOS DE PAGINACIÓN
+----------------------
+
+Vamos a hacer la busqueda por categorías...
+
+Si buscamos ahora en cualquier categoría va a dar un error para soluciar eso nos vamos a store/views.py/
+
+def store(request, category_slug=None):
+    categories = None
+    products = None
+
+    if category_slug != None:
+        categories = get_object_or_404(Category, slug=category_slug)
+        products = Product.objects.filter(category=categories, is_available=True)
+        paginator = Paginator(products, 5) -->
+        page = request.GET.get('page') -->
+        paged_products = paginator.get_page(page) -->
+        product_count = products.count()
+
+Simplemente pegamos lo que ya teniamos en el else y ya estaría arreglado, ahora vamos a trabajar en el tema del control
+de paginación.
+
+Para ello nos vamos a templates/store/store.html
+
+Linea 153
+
+    <nav class="mt-4" aria-label="Page navigation sample">
+      <ul class="pagination">
+        <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
+      </ul>
+    </nav>
+
+
+    {% if products.has_other_pages %}
+                   \______________/
+                   método paginator
+      <ul class="pagination">
+        <li class="page-item"><a class="page-link" href="?page={products.previous_page_number}">Anterior</a></li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
+      </ul>
+    {% endif %}
+
+Con esto hacemos que dependiendo del número de productos que haya pueda aparecer o no el paginador.
+
+Ahora vamos con los distintos botones....
+
+El primer boton es "Anterior", en él tendremos que decir primero que si hay alguna página menor que pueda ir a ella y
+sino que se deshabilite esa posibilidad...
+
+    {% if products.has_other_pages %}
+      <ul class="pagination">
+          { % if products.has_previous %}
+                         \____________/
+                         método paginator
+            <li class="page-item"><a class="page-link" href="?page={products.previous_page_number}">Anterior</a></li>
+          {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li>
+          {%endif %}
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item"><a class="page-link" href="#">Siguiente</a></li>
+      </ul>
+    {% endif %}
+
+Vamos a hacer que los botones con nùmero sean dinamico y se pueda ir a cada una de las páginas si pulso en el botón...
+
+Para trabajar con Anterior, primero tenemos que ver en que página estamos ya que si estamos en la página 1 no tiene
+sentido que ese botón este activo.
+
+     {% if products.has_previous %} --> comprueba si hay una página anterior
+            <li class="page-item"><a class="page-link" href="?page={{products.previous_page_number}}">Anterior</a></li>
+          {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#">Anterior</a></li> --> desabilitamos el botón
+                                 --------
+          {% endif %}
+
+Una vez hecho vamos a hacer que si pulsamos un número nos vaya a la página en cuestión...
+
+    {% for i in products.paginator.page_range %}
+          {% if products.number == i %} --> si es la mísma página
+            <li class="page-item active"><a class="page-link" href="#">{{i}}</a></li>
+          {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{i}}">{{i}}</a></li>
+          {% endif %}
+        {% endfor %}
+
+Y tocaría ahora el botón siguiente...
+
+     {% if products.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{products.next_page_number}}">Siguiente</a></li>
+
+        {% else %}
+          <li class="page-item disabled"><a class="page-link" href="#">Siguiente</a></li>
+        {% endif %}
+
+Una cosa muy importante es poner doble {{}}, sino no funcionará.
+
+
+BUSQUEDA DE PRODUCTOS
+----------------------
+
+Para ello nos vamos a ir a store/urls.py
+
+Vamos a hacer varios arreglos al urlpatterns
+
+urlpatterns = [
+    path('', views.store, name='store'),
+    path('category/<slug:category_slug>/', views.store, name='products_by_category'),
+          ---------
+    path('category/<slug:category_slug>/<slug:product_slug>/', views.product_detail, name='product_detail'),
+          ---------
+    path('search/', views.search, name='search'), --> creamos este path
+]
+
+ahora nos vamos a ir a store/views.py
+
+def search(request):
+    if 'keyword' in request.GET: --> keyword es una palabra clave
+        keyword = request.GET['keyword']
+
+        if keyword:
+            # que me busque por fecha de creación descendiente, vamos a hacer una doble consulta con or(Q) |
+            products = Product.objects.order_by('-create_date').filter(Q(description__icontains=keyword) |
+                                                                        Q(product_name__icontains=keyword))
+                                                                                        \________/
+            product_count = products.count()                      le indica que contenga algo igual a la palabra clave
+
+    context = {
+        'products': products,
+        'product_count': product_count,
+    }
+    return render (request, 'store/store.html', context)
+
+
+Nos vamos a ir a templates/includes/navbar.html
+
+Linea 50
+
+<div class="col-lg  col-md-6 col-sm-12 col">
+		<form action="#" class="search">
+			<div class="input-group w-100">
+			    <input type="text" class="form-control" style="width:60%;" placeholder="Search">
+
+			    <div class="input-group-append">
+			      <button class="btn btn-primary" type="submit">
+			        <i class="fa fa-search"></i>
+			      </button>
+			    </div>
+		    </div>
+		</form> <!-- search-wrap .end// -->
+</div> <!-- col.// -->
+
+
+
+Quedando así....
+
+<div class="col-lg  col-md-6 col-sm-12 col">
+		<form action="{% url 'search' %}" class="search"> -->
+			<div class="input-group w-100">
+			    <input type="text" class="form-control" style="width:60%;" placeholder="Buscar Producto" name="keyword">
+                                                                                                         \_____________/
+			    <div class="input-group-append">
+			      <button class="btn btn-primary" type="submit">
+			        <i class="fa fa-search"></i>
+			      </button>
+			    </div>
+		    </div>
+		</form> <!-- search-wrap .end// -->
+
+Guardamos y lo probamos..
+
+Si nos fijamos en lo que nos está devolviendo la Consola hay el siguiente mensaje....
+
+ UnorderedObjectListWarning: Pagination may yield inconsistent results with an unordered
+ object_list: <class 'store.models.Product'> QuerySet.
+  paginator = Paginator(products, 3)
+
+Esto nos indica que tendríamos que haber ordenado anteriormente, para evitar esto nos vamos a views.py
+
+
+def store(request, category_slug=None):
+    categories = None
+    products = None
+
+    if category_slug != None:
+        categories = get_object_or_404(Category, slug=category_slug)
+        products = Product.objects.filter(category=categories, is_available=True).order_by('id') -->
+        paginator = Paginator(products, 3)
+        page = request.GET.get('page')
+        paged_products = paginator.get_page(page)
+        product_count = products.count()
+    else:
+        products = Product.objects.all().filter(is_available=True).order_by('id') -->
+        # vamos a llamar a una instancia de Paginator
+        paginator = Paginator(products, 3)
+
+Guardamos y volvemos a probarlo
+
+Cuando no existe algún producto, nos sale la página en blanco y el mensaje de:
+
+    0 Productos Encontrados
+
+La verdad es que no tendría que salir esto, sino algo que nos diga que no existe o que no hay, para ello nos vamos
+a templates/store/store.html
+
+<div class="row">
+        {% if productos %} --> verifica si existe algún producto
+        {% for product in products %}
+
+                <div class="col-md-4">
+                    <figure class="card card-product-grid">
+                        <div class="img-wrap">
+
+                            <a href="{{ product.get_url}}"><img src="{{ product.images.url }}"></a>
+
+                        </div> <!-- img-wrap.// -->
+                        <figcaption class="info-wrap">
+                            <div class="fix-height">
+                                <a href="{{ product.get_url}}" class="title">{{product.product_name}}</a>
+                                <div class="price-wrap mt-2">
+                                    <span class="price">{{product.price}}€</span>
+                                </div> <!-- price-wrap.// -->
+                            </div>
+                            <a href="{% url 'add_cart' product.id %}" class="btn btn-block btn-success">Agregar al Carrito </a>
+                        </figcaption>
+                    </figure>
+                </div> <!-- col.// -->
+        {% endfor %}
+        {% else %} --> le ponemos la condición por si no hay resultados
+            <div>
+                <h2><strong>No se encontraron resultados</strong></h2>
+            </div>
+        {% endif %}
+
+Guardamos y lo probamos.
+

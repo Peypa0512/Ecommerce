@@ -25,7 +25,6 @@ git push -u origin main
 
 o importar código de otro repositorio
 
-hacemos el git init dentro de la carpeta Ecommerce...
 
 ahora creamos el archivo .gitignore
 
@@ -44,4 +43,33 @@ git config --global user.email  pedro.sanzr@outlook.es
 
 Esto se hace solo 1 vez, una vez configurado no hace falta hacerlo más...
 
-Video 4:57
+hacemos el git init dentro de la carpeta Ecommerce...
+
+git commit -m "Proyecto Ecommerce"
+git branch -M main
+git remote add origin https://github.com/Peypa0512/Ecommerce.git
+git push -u origin main
+
+Enumerating objects: 382, done.
+Counting objects: 100% (382/382), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (370/370), done.
+Writing objects: 100% (382/382), 3.69 MiB | 4.39 MiB/s, done.
+Total 382 (delta 73), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (73/73), done.
+To https://github.com/Peypa0512/Ecommerce.git
+ * [new branch]      main -> main
+branch 'main' set up to track 'origin/main'.
+
+
+Para actualizar el repositorio....
+
+git status
+
+git add .
+
+git commit -m "Primera Actualización"
+
+git push
+
+

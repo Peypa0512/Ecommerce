@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "category",
     "accounts",
     "store",
+    "carro",
 ]
 
 MIDDLEWARE = [
@@ -66,6 +67,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "category.context_processors.menu_link",
+                "carro.context_processors.counter",
             ],
         },
     },
@@ -130,6 +132,19 @@ STATICFILES_DIRS = [
 # creamos un media URL para los archivos tipo imagen
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR /'media'
+
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
+}
+
+# Configuración cuenta correo para activación cuentas usuario
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'peypa0512@gmail.com'
+EMAIL_HOST_PASSWORD = 'vvjajyokbssqdxrg'
+EMAIL_USE_TLS = True
+
 
 
 # Default primary key field type

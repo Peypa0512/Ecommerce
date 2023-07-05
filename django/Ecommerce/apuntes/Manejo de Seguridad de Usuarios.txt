@@ -1,0 +1,562 @@
+SEGURIDAD REGISTRO DE USUARIOS
+------------------------------
+
+Vamos a complementar los templates de login y de usuario, lo primero que vamos a hacer es ir a la carpeta accounts
+y creamos un archivo llamado urls.py
+
+from django.urls import path
+from . import views
+
+urlspatterns= [
+    path('register/', views.register, name='register'), --> para el nuevo registro
+    path('login/', views.login, name='login'),          --> para el logeado
+    path('logout/', views.logout, name='logout'),       --> para salir del logeo
+]
+
+Guardamos y vamos a registrarlo en ecommerce/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+from . import views
+from django.conf.urls.static import static
+from django.conf import settings
+
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path('', views.home, name="home"),
+    path('store/', include('store.urls')),
+    path('carro/', include('carro.urls')),
+    path('accounts/', include('accounts.urls'))
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+ahora nos vamos a account/views.py
+
+from django.shortcuts import render
+
+# Create your views here.
+def register(request):
+    return render(request, 'account/register.html')
+
+def login(request):
+    return render(request, 'account/login.html')
+
+
+def logout(request):
+    return
+
+Ahora tenemos que crear los templates, para ello vamos a la carpeta templates y creamos una nueva llamada accounts y
+creamos las paginas de login y register.
+
+Lo probamos, vemos que funciona y ahora lo siguiente sería en el navbar configurar los botones de login que hay....
+
+templatess/includes/navbar...
+
+linea 67
+
+<div>
+    <a href="./signin.html">Login</a> <span class="dark-transp"> | </span>
+	<a href="./register.html"> Registrar</a>
+</div>
+
+Le vamos a pasar la url de cada uno....
+
+<div>
+	<a href="{% url 'login' %}">Login</a> <span class="dark-transp"> | </span>
+	<a href="{% url 'register'%}"> Registrar</a>
+</div>
+
+Guardamos y probamos...
+
+Vamos a trabajar el interfaz de usuarios tanto de register como de login, para ello primero nos vamos a accounts/register.html
+
+
+en la carpeta html_template hay un fichero llamado register_template.html, copiamos y pegamos en register.html dentro
+del {% block content %}
+
+Para el registro vamos a utilizar lo que se llama django forms
+
+en accounts creamos un archivo llamado forms.py
+
+from django import forms
+from .models import Account --> en models tenemos definida la estructura de usuario
+                        ^
+                        |
+class Account(AbstractBaseUser): -->
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+    username = models.CharField(max_length=50, unique=True)
+    email = models.CharField(max_length=100, unique=True)
+    phone_number = models.CharField(max_length=10)
+
+
+creamos la clase ...
+
+    class RegistrationForm(forms.ModelForm):
+        class Meta:
+            model = Account -> se va a basar
+            fields = ['first_name', 'last_name', 'phone_number', 'email', 'password'] -> con estos campos
+
+
+Esta es la estructura modelo que va a usará mi formulario en mi template html, tengo que enviar este modelo a la página,
+directamente no puede, por lo que lo tendrá que hacer el metodo registro creado en views.py
+
+from .forms import RegistrationForm
+
+def register(request):
+    form = RegistrationForm()
+    context = {
+        'form': form --> hacemos un diccionario que contiene la estructura del formulario que tiene el template html
+    }
+    return render(request, 'accounts/register.html', context)
+
+vamos a register.html
+
+     <form>
+                {{form.as_p}} --> con esto vamos a ver que es lo que está generando
+
+guardamos y probamos...
+
+TEMPLATE REGISTRO DE DJANGO
+---------------------------
+
+Estamos en templates/accounts/register.html
+
+linea 14-15
+
+<form action ="{% url 'register'%}" method="POST">
+    {% csrf_token %}
+    <div class="form-row">
+        <div class="col form-group"> --> para la primera línea
+            <label>Nombre</label>
+            {{ form.first_name }}
+        </div> <!-- form-group end.// -->
+    </div> <!-- form-row end.// -->
+    <div class="form-row"> --> para la segunda línea
+        <div class="col form-group">
+            <label>Apellido</label>
+            {{form.last_name}}
+        </div> <!-- form-group end.// -->
+
+        <div class="col form-group">
+            <label>Número de Teléfono</label>
+            {{form.phone_number}}
+        </div> <!-- form-group end.// -->
+
+        div class="col form-group">
+            <label>Email</label>
+            {{form.email}}
+        </div> <!-- form-group end.// -->
+    </div> <!-- form-row end.// -->
+
+Con esto ya tendríamos definido casí, faltaría el password, que lo dejariamos así...
+
+lo primero volvemos a forms.py
+
+class RegistrationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput(attrs={ --> definimos como va a ser password
+            'placeholder': 'Ingrese Password'
+    }))
+    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder': 'Confirmar Password'
+    }))
+
+    class Meta:
+        model = Account
+        fields = ['first_name', 'last_name', 'phone_number', 'email', 'password']
+
+
+
+Podemos mediante css o algo que agregar lo puede transformar y llevar a esa caja de texto
+
+Guardamos y vamos a register.html
+
+     <div class="form-row">
+        <div class="form-group col-md-6">
+            <label>Crear password</label>
+            {{ form.password }}
+        </div> <!-- form-group end.// -->
+
+        <div class="form-group col-md-6">
+            <label>Repetir password</label>
+            {{ form.confirm_password }}
+        </div> <!-- form-group end.// -->
+     </div>
+
+Guardamos y probamos...
+
+Ahora ya tenemos lo que queremos, pero no se ve bien, hay que dar una vuelta a las casillas, para ello volvemos a
+register.html.
+
+Antes de nada, hay que recordar que todas las cajas de texto se están generando en la class Meta que hemos definido en
+forms.py
+
+    class Meta:
+        model = Account
+        fields = ['first_name', 'last_name', 'phone_number', 'email', 'password']
+
+para modificarlo y poder ponerlo más vistoso nos vamos a forms.py..
+
+class RegistrationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
+            'placeholder': 'Ingrese Password',
+
+    }))
+    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'placeholder': 'Confirmar Password',
+
+    }))
+
+    class Meta:
+        model = Account
+        fields = ['first_name', 'last_name', 'phone_number', 'email', 'password']
+
+
+    def __init__ (self, *args, **kwargs):
+        super(RegistrationForm, self).__init__(*args, **kwargs)
+        self.fields['first_name'].widget.attrs['placeholder'] = 'Ingrese nombre'
+        self.fields['last_name'].widget.attrs['placeholder'] = 'Ingrese Apellidos'
+        self.fields['phone_number'].widget.attrs['placeholder'] = 'Ingrese teléfono'
+        self.fields['email'].widget.attrs['placeholder'] = 'Ingrese email'
+        for fields in self.fields:
+            self.fields[fields].widget.attrs['class'] = 'form-control'
+
+
+
+REGISTRO DE USUARIOS EN LA BASE DE DATOS
+----------------------------------------
+Ahora vamos a trabajar en la transacción de un nuevo usuario, para ello vamos a account/views.py
+
+def register(request):
+    #vamos a capturar la data que envia el cliente...
+    form = RegistrationForm()
+    if request.method == 'POST': --> si lo que recoge es desde  post
+        form = RegistrationForm(request.POST) --> me va a recoger los datos
+        if form.is_valid(): # si ha pasado la validacion
+            # capturamos los datos
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
+            phone_number = form.cleaned_data['phone_number']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+
+            # para el user name vamos a capturar el email y sobre él lo vamos a hacer
+            username = email.split('@')[0]
+
+            # instancia al usuario
+            user = Account.objects.create_user(first_name=first_name, last_name=last_name, email=email,
+                                               username=username, password=password)
+            user.phone_number = phone_number
+            user.save()
+
+
+    context = {
+        'form': form
+    }
+    return render(request, 'accounts/register.html', context)
+
+
+
+Guardamos y lo probamos.
+
+Ahora una cosa importante, al meter el password tenemos una segunda validación de el msimo, entonces ahora debemos
+tratarlo para que se verifique que es el mismo password.
+
+volvemos al archivo forms.py
+
+    def clean(self):
+        cleaned_data = super(RegistrationForm, self).clean() --> es tener acceso a los datos del formulario
+        password = cleaned_data.get('password') --> llamamos a la caja de texto de password
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if password != confirm_password: --> si son distintos
+            raise forms.ValidationError(
+                "¡El password no coincide!" --> me va a imprimir este mensaje
+            )
+
+Guardamos y nos vamos a templates/account/register.html
+línea 47
+
+     <div class="form-group">
+        <button type="submit" class="btn btn-primary btn-block"> Registrar  </button>
+     </div> <!-- form-group// -->
+     {{ form.errors }} --> aquí incrustamos la funcion clean()
+</form>
+
+Guardamos y probamos, vemos que al introducir passwords distintos aparece debajo del botón de registrar este mensaje:
+__all__
+
+    ¡El password no coincide!
+
+
+MENSAJES PERSONALIZADO EN DJANGO
+--------------------------------
+
+Dentro de Django hay un paquete llamado message, permite manejar el disparo de estos eventos, para ello vamos a
+ecommerce/settings.py
+
+nos vamos abajo del fichero y ponemos lo siguiente...
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR /'media'
+
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger', --> esto indicando de esta forma que incorpore por defecto los estilos que tiene
+                                  bootstrap y es para todas las páginas, y cualquiera puede tener acceseo a estos
+                                  mensajes..
+
+}
+
+
+Para ello vamos a template/includes/alerts.html
+
+{% if messages %}
+  {% for  message in messages %}
+                                         Puede que no tenga valor este tags para ello hacemos el if
+    <div id="message" class="container">                      |
+      <div  {% if message.tags %}  class="alert alert-{{ message.tags  }}" {% endif %} role="alert">
+                                   \_________________/                                 \__________/
+                                   para saber si es un error                            el rol que va a tener
+                                   o un evento(registro hecho)
+          {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %} Importante: {% endif %} --> si es de suma importancia
+                                 \___________________________/   \_________/
+                                 importancia del mensaje          imprime
+
+          {{message}} --> que me imprima el mensaje
+
+      </div>
+
+    </div>
+  {% endfor %}
+{% endif %}
+
+
+Queda una cosa importante, si sale el mensaje tiene que ser por un tiempo definido (4sg), mediante JS que reconozca
+el mensaje y desaparezca en 4 sg, para ello vamos a static/js/script.js
+
+// función para desaparecer message
+setTimeout(function(){
+    $('#message').fadeOut('slow') --> desaparecer lentamente
+      \_/
+    capture ese div(message)
+},4000) --> va a durar 4000 = 4sg
+
+Para que aparezca el mensaje en la parte superior tenemos que ir a donde se va a disparar en nuestro caso va a ser el
+botón de registrar, para ello nos vamos a accounte/views.py
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+def register(request):
+....
+    user.save()
+
+    messages.success(request, 'Se ha registrado correctamente') --> le pasamos el mensaje
+    return redirect('register') --> y que nos vuelva a redireccionar a la página.
+
+
+Una vez hecho tenemos que ir a templates/accounts/register.html
+
+linea 7
+
+ <!-- ============================ COMPONENT REGISTER   ================================= -->
+        <div class="card mx-auto" style="max-width:520px; margin-top:40px;">
+          <article class="card-body">
+              {% include 'include/alerts.html' %} <!-- si hay algún mensaje aparecerá aquí -->
+
+            <header class="mb-4"><h4 class="card-title">Registro de Usuario</h4></header>
+
+
+CONSEJO JS
+----------
+Cuando hagas un cambio en un archivo JS, hay que limpiar la cache, para ello en el navegador bt dcho/inspeccionar y
+botón dcho de refrescar arriba donde la barra de navegación, aparece la opción de Empty Cache and Hard Reload
+
+Guardamos y probamos, hay un pequeño problema, y es que pasado 4 sg no desaparece para ello vamos a cortar esta función
+y lo vamos a pegar en templates/base.html
+
+línea 36
+
+    // jquery ready start
+        $(document).ready(function() {
+    	// jQuery code
+    	    // función para desaparecer message
+            setTimeout(function(){
+            $('#message').fadeOut('slow')
+
+            },4000)
+        });
+    // jquery end
+</script>
+
+Vamos a realizar otro cambio, nos vamos a ir a templates/includes/alerts.html
+
+% for  message in messages %}
+
+    <div id="message" class="container"> --> esto lo que va hacer es imprimirse varias veces por el for, por lo que
+                                             no es correcto, debe quedar así...
+
+
+
+<div id="message" class="container">
+       {% for  message in messages %}    --> el for debe ir después del container
+
+      <div  {% if message.tags %}  class="alert alert-{{ message.tags  }}" {% endif %} role="alert">
+          {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %} Importante: {% endif %}
+          {{message}}
+
+      </div>
+        {% endfor %}
+</div>
+
+Guardamos y probamos....
+
+LOGIN EN ECOMMERCE
+------------------
+
+Antes vamos a crear una validación extra para registrar, para ello vamos a templates/account/register.html
+
+En la línea 50 habíamos puesto el error, le vamos a agregar otra...
+
+            </div> <!-- form-group// -->
+            {{ form.email.errors }} --> para confirmación de emails '@'
+            {{ form.errors }}
+        </form>
+
+Guardamos y probamos...
+
+probamos a meter un mismo correo otra vez y lo que nos va a aparedcer es...
+
+    Ya existe Account con este Email.
+
+    email
+        Ya existe Account con este Email.
+
+
+Vamos a empezar a trabajar con LOGIN, para ello vamos a template/account/login.html
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+{% endblock %}
+
+en la carpeta html-template hay archivo llamado login_template.html, vamos a copiar el código y pegarlo enmedio de
+{% block content %}
+
+Guardamos y probamos, vemos que funciona, ahora tendremos que hacer el POST para poder loguearnos.
+
+vamos a template/account/login.html
+
+linea 16             la url de login definida en views.py
+                        |
+<form action ="{% url 'login' %}" method="POST">
+    {% csrf_token %} -->
+    <div class="form-group">
+        <input type="email" class="form-control" placeholder="Email" name="email" >
+                                                                     \__________/
+    </div> <!-- form-group// -->                                     lo que va a recoger el post
+    <div class="form-group">
+        <input type="password" class="form-control" placeholder="Password" name="password" >
+                                                                            \____________/
+    </div> <!-- form-group// -->                                            lo que va a recoger el post
+
+    <div class="form-group">
+        <a href="#" class="float-right">Olvidaste tu password?</a>
+
+    </div> <!-- form-group form-check .// -->
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary btn-block"> Login  </button>
+    </div> <!-- form-group// -->
+</form>
+</div> <!-- card-body.// -->
+</div> <!-- card .// -->
+
+<p class="text-center mt-4">No tienes una cuenta? <a href="{% url 'register' %}">Registrate</a></p>
+                                                            \________________/
+                                                            para registro nuevo
+<br><br>
+
+
+ Guardamos y vamos a accounts/views.py
+
+ from django.contrib import messages, auth
+
+def login(request):
+
+    if request.method== 'POST': --> si el metodo de la respuesta es POST
+        email = request.POST['email'] --> que me coga los datos de email
+        password = request.POST['password']
+
+        # ahora autentificamos...
+        user = auth.authenticate(email=email, password=password)
+
+        if user is not None: --> si no está vacio
+            auth.login(request, user) --> le pasamos los datos de autenticación
+            return redirect('home') --> lo volvemos a redirigir a home
+        else:
+            messages.error(request, 'Usuario y Contraseña no correcto')
+            return redirect('login')
+
+    return render(request, 'accounts/login.html')
+
+Guardamos, queda pendiente que no hemos puesto el caso de error para que lo imprima en el template, por lo que volvemos
+a templates/account/login.html
+
+linea 7
+    <!-- ============================ COMPONENT LOGIN   ================================= -->
+        <div class="card mx-auto" style="max-width: 380px; margin-top:100px;">
+            {% include 'includes/alerts.html' %} --> lo añadimos aquí arriba
+          <div class="card-body">
+
+Guardamos y probamos, hay un pequeño detalle, cuando te redirecciona a home, sigue apareciendo login/registro, pero
+ya estamos logueado, tendría que aparecer logout para poder salir y Bienvenido visitante por el nombre del usuario.
+
+Vamos a ir a templates/includes/navbar.html
+
+línea 66
+
+<div class="widget-header">
+    <small class="title text-muted">Bienvenido visitante!</small>
+	<div>
+	    <a href="{% url 'login' %}">Login</a> <span class="dark-transp"> | </span>
+		<a href="{% url 'register'%}"> Registrar</a>
+	</div>
+</div>
+</div>
+
+quedando así...
+
+
+<div class="d-flex justify-content-end mb-3 mb-lg-0">
+    {% if user.id is None %}
+	    <div class="widget-header">
+		    <small class="title text-muted">Bienvenido visitante!</small>
+		    <div>
+		        <a href="{% url 'login' %}">Login</a> <span class="dark-transp"> | </span>
+			    <a href="{% url 'register'%}"> Registrar</a>
+		    </div>
+		</div>
+	{% else %}
+		<div class="widget-header">
+		    <small class="title text-muted">Bienvenido {{user.first_name}}!</small>
+			<div>
+			    <a href="#">Dashboard</a> <span class="dark-transp"> | </span>
+			    <a href="{% url 'logout'%}">Salir de Sesión</a>
+			</div>
+		</div>
+    {% endif %}
+
+Guardamos y volvemos a probar....
+
+ahora tenemos que trabajar la función logout, para ello vamos a account/views.py
+
+from django.contrib.auth.decorators import login_required
+@login_required(login_url='login')  --> solo va a funcionar cuando estas logueado
+def logout(request):
+    auth.logout(request)
+    messages.success(request, 'Has cerrado sesión')
+
+     return redirect('login') --> me va a volver a redireccionar a login
